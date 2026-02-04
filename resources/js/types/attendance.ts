@@ -52,7 +52,7 @@ export interface TeamAnalyticsProps {
 }
 
 export interface PulseFeedItem {
-    type: 'warning' | 'peak' | 'success' | 'info';
+    type: 'warning' | 'peak' | 'success';
     title: string;
     desc: string;
     action?: string;

@@ -12,11 +12,40 @@ import {
     Search,
     Info,
     X,
-    Check
+    Check,
+    Loader2
 } from 'lucide-react';
 import React from 'react';
+import { useForm } from '@inertiajs/react';
+import type { LogManagementProps, CorrectionData, AuditLogItem } from '@/types/attendance';
 
-export default function LogManagement() {
+interface PageProps extends LogManagementProps {}
+
+export default function LogManagement({
+    correction = null,
+    auditLog = [],
+    hasCorrection = false
+}: PageProps) {
+    const approveForm = useForm({});
+    const rejectForm = useForm({});
+
+    const handleApprove = () => {
+        if (correction) {
+            approveForm.post(route('corrections.approve', { correction: correction.id }), {
+                preserveScroll: true,
+            });
+        }
+    };
+
+    const handleReject = () => {
+        if (correction) {
+            rejectForm.post(route('corrections.reject', { correction: correction.id }), {
+                preserveScroll: true,
+            });
+        }
+    };
+
+    const isProcessing = approveForm.processing || rejectForm.processing;
     return (
         <DashboardLayout title="Compliance & Trust">
             <div className="flex flex-col lg:flex-row h-full min-h-0 overflow-hidden">
@@ -28,7 +57,7 @@ export default function LogManagement() {
                         <ChevronRight className="size-3 text-white/10" />
                         <span className="text-muted-dynamics/60">LOG AUDIT</span>
                         <ChevronRight className="size-3 text-white/10" />
-                        <span className="text-white">REQUEST_482</span>
+                        <span className="text-white">{correction ? correction.requestCode : 'NO_REQUEST'}</span>
                     </div>
 
                     <div className="flex flex-col gap-8">
@@ -60,12 +89,12 @@ export default function LogManagement() {
                                         <div className="absolute inset-0 bg-white/5 blur-xl rounded-full" />
                                         <div className="relative px-6 md:px-8 py-4 bg-white/5 rounded-2xl border border-white/5">
                                             <p className="text-xs md:text-sm font-bold text-muted-dynamics/60 mb-1">Time Captured</p>
-                                            <p className="text-4xl md:text-5xl font-black text-muted-dynamics/40 line-through">08:42:15</p>
+                                            <p className="text-4xl md:text-5xl font-black text-muted-dynamics/40 line-through">{correction?.originalTime || '--:--:--'}</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2 items-center text-center">
                                         <p className="text-[10px] md:text-xs font-bold text-muted-dynamics/60 uppercase tracking-widest leading-none">Status: Immutable</p>
-                                        <p className="text-[9px] md:text-[10px] text-muted-dynamics/40 font-medium">Auto-synced via Mesh Network Node #04</p>
+                                        <p className="text-[9px] md:text-[10px] text-muted-dynamics/40 font-medium">Auto-synced via Mesh Network</p>
                                     </div>
                                 </div>
                             </div>
@@ -84,32 +113,44 @@ export default function LogManagement() {
                                         <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse" />
                                         <div className="relative px-6 md:px-8 py-4 bg-background-dark rounded-2xl border border-primary/30 shadow-[0_4px_30px_rgba(19,200,236,0.2)]">
                                             <p className="text-xs md:text-sm font-bold text-primary mb-1">Request Value</p>
-                                            <p className="text-5xl md:text-6xl font-black text-white">08:30:00</p>
+                                            <p className="text-5xl md:text-6xl font-black text-white">{correction?.proposedTime || '--:--:--'}</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2 items-center text-center">
-                                        <p className="text-[10px] md:text-xs font-black text-primary uppercase tracking-[0.2em] leading-none">Status: Pending Verification</p>
-                                        <p className="text-[9px] md:text-[10px] text-muted-dynamics font-medium">Submitted by Rivera, A. via Terminal Hub</p>
+                                        <p className="text-[10px] md:text-xs font-black text-primary uppercase tracking-[0.2em] leading-none">Status: {correction?.status === 'pending' ? 'Pending Verification' : correction?.status === 'approved' ? 'Approved' : 'Rejected'}</p>
+                                        <p className="text-[9px] md:text-[10px] text-muted-dynamics font-medium">Submitted by {correction?.requester?.name || 'Unknown'}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Action Bar */}
-                        <div className="min-h-20 flex flex-col md:flex-row items-center justify-between p-4 md:px-8 bg-header-background border border-white/5 rounded-2xl gap-4">
-                            <div className="flex items-center gap-3">
-                                <Info className="size-5 text-muted-dynamics/60" />
-                                <p className="text-[10px] md:text-xs text-muted-dynamics font-medium text-center md:text-left">Compliance window closes in 4h 12m. Decisive action required for record finalization.</p>
+                        {hasCorrection && correction?.status === 'pending' && (
+                            <div className="min-h-20 flex flex-col md:flex-row items-center justify-between p-4 md:px-8 bg-header-background border border-white/5 rounded-2xl gap-4">
+                                <div className="flex items-center gap-3">
+                                    <Info className="size-5 text-muted-dynamics/60" />
+                                    <p className="text-[10px] md:text-xs text-muted-dynamics font-medium text-center md:text-left">
+                                        Reason: {correction.reason}. Decisive action required for record finalization.
+                                    </p>
+                                </div>
+                                <div className="flex gap-4 w-full md:w-auto">
+                                    <button 
+                                        onClick={handleReject}
+                                        disabled={isProcessing}
+                                        className="flex-1 md:flex-none px-6 py-3 rounded-xl border border-white/10 text-muted-dynamics hover:text-white hover:bg-white/5 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50"
+                                    >
+                                        {rejectForm.processing ? <Loader2 className="size-4 animate-spin" /> : <X className="size-4" />} Decline
+                                    </button>
+                                    <button 
+                                        onClick={handleApprove}
+                                        disabled={isProcessing}
+                                        className="flex-1 md:flex-none px-6 md:px-10 py-3 rounded-xl bg-primary text-background-dark hover:shadow-[0_0_25px_rgba(19,200,236,0.3)] transition-all text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50"
+                                    >
+                                        {approveForm.processing ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Accept & Commit
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex gap-4 w-full md:w-auto">
-                                <button className="flex-1 md:flex-none px-6 py-3 rounded-xl border border-white/10 text-muted-dynamics hover:text-white hover:bg-white/5 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                                    <X className="size-4" /> Decline
-                                </button>
-                                <button className="flex-1 md:flex-none px-6 md:px-10 py-3 rounded-xl bg-primary text-background-dark hover:shadow-[0_0_25px_rgba(19,200,236,0.3)] transition-all text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                                    <Check className="size-4" /> Accept & Commit
-                                </button>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 
@@ -118,8 +159,8 @@ export default function LogManagement() {
                     <div className="p-6 md:p-8 border-b border-white/5 bg-header-background/50 ring-1 ring-inset ring-white/[0.02]">
                         <p className="text-[10px] font-bold text-muted-dynamics/60 uppercase tracking-[0.3em] mb-4">Audit Context</p>
                         <div className="flex flex-col gap-1 text-white">
-                            <p className="text-xs font-bold text-primary">Request #482</p>
-                            <p className="text-[10px] text-muted-dynamics font-medium">Automatic system capture vs. Manual adjustment requested by Alex Rivera.</p>
+                            <p className="text-xs font-bold text-primary">{correction?.requestCode || 'No Request'}</p>
+                            <p className="text-[10px] text-muted-dynamics font-medium">Automatic system capture vs. Manual adjustment requested by {correction?.requester?.name || 'Unknown'}.</p>
                         </div>
                     </div>
 
@@ -138,9 +179,11 @@ export default function LogManagement() {
                         <div className="flex flex-col gap-4 mt-4">
                             <p className="text-[10px] font-bold text-muted-dynamics/60 uppercase tracking-widest px-2">Audit Sequence</p>
                             <div className="flex flex-col gap-1">
-                                <TimelineRow time="08:42" event="System capture (Auto)" status="mismatch" />
-                                <TimelineRow time="14:05" event="Correction requested" status="pending" />
-                                <TimelineRow time="14:06" event="Audit sequence finalized" status="success" />
+                                {auditLog.length > 0 ? auditLog.map((item, index) => (
+                                    <TimelineRow key={index} time={item.time} event={item.event} status={item.status} />
+                                )) : (
+                                    <p className="text-xs text-muted-dynamics/60 italic px-2 py-2">No audit log entries.</p>
+                                )}
                             </div>
                         </div>
                     </div>

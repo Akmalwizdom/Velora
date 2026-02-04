@@ -18,8 +18,25 @@ import {
     Users
 } from 'lucide-react';
 import React from 'react';
+import type { PerformanceDashboardProps, ActivityItem } from '@/types/attendance';
 
-export default function PerformanceDashboard() {
+interface PageProps extends PerformanceDashboardProps {}
+
+const iconMap: Record<string, React.ReactNode> = {
+    clock: <Clock className="size-3" />,
+    zap: <Zap className="size-3" />,
+    message: <MessageSquare className="size-3" />,
+    users: <Users className="size-3" />,
+};
+
+export default function PerformanceDashboard({
+    attendanceState = 'Not Checked In',
+    attendanceStatus = 'Pending',
+    activeHours = 0,
+    workMode = 'Deep Focus',
+    recentActivity = [],
+    weeklyPattern = [30, 60, 45, 90, 100, 20, 10]
+}: PageProps) {
     return (
         <DashboardLayout title="Performance Dashboard" slimSidebar={true}>
             <div className="flex flex-col lg:flex-row h-full min-h-0 overflow-hidden">
@@ -37,17 +54,17 @@ export default function PerformanceDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                                 <p className="text-[10px] font-black text-muted-dynamics/60 uppercase tracking-widest mb-1">Attendance State</p>
-                                <p className="text-2xl font-black text-white">Checked In</p>
-                                <p className="text-[10px] text-primary font-bold mt-1 uppercase">On Time</p>
+                                <p className="text-2xl font-black text-white">{attendanceState}</p>
+                                <p className="text-[10px] text-primary font-bold mt-1 uppercase">{attendanceStatus}</p>
                             </div>
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                                 <p className="text-[10px] font-black text-muted-dynamics/60 uppercase tracking-widest mb-1">Active Hours</p>
-                                <p className="text-2xl font-black text-white">6.4h</p>
+                                <p className="text-2xl font-black text-white">{activeHours}h</p>
                                 <p className="text-[10px] text-muted-dynamics/40 font-bold mt-1 uppercase">Today</p>
                             </div>
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                                 <p className="text-[10px] font-black text-muted-dynamics/60 uppercase tracking-widest mb-1">Work Mode</p>
-                                <p className="text-2xl font-black text-white">Deep Focus</p>
+                                <p className="text-2xl font-black text-white">{workMode}</p>
                                 <p className="text-[10px] text-muted-dynamics/40 font-bold mt-1 uppercase">Current</p>
                             </div>
                         </div>
@@ -59,10 +76,18 @@ export default function PerformanceDashboard() {
                                 <button className="text-[10px] font-bold text-muted-dynamics/60 hover:text-white uppercase tracking-widest transition-colors">See Full Log</button>
                             </div>
                             <div className="space-y-1">
-                                <PersonalLogItem time="09:24" title="Check-in automated" desc="Frontend Architecture realignment started." status="success" icon={<Clock className="size-3" />} />
-                                <PersonalLogItem time="11:15" title="Collaboration Sync" desc="Core Team Sync: Project Velocity review." status="collab" icon={<Users className="size-3" />} />
-                                <PersonalLogItem time="12:30" title="Manual Pulse Adjustment" desc="Correction requested for morning capture error." status="alert" icon={<MessageSquare className="size-3" />} />
-                                <PersonalLogItem time="14:02" title="Check-out detected" desc="Shift transition detected." status="success" icon={<Zap className="size-3" />} />
+                                {recentActivity.length > 0 ? recentActivity.map((item, index) => (
+                                    <PersonalLogItem 
+                                        key={index} 
+                                        time={item.time} 
+                                        title={item.title} 
+                                        desc={item.desc} 
+                                        status={item.status} 
+                                        icon={iconMap[item.icon] || <Clock className="size-3" />} 
+                                    />
+                                )) : (
+                                    <p className="text-xs text-muted-dynamics/60 italic px-4 py-6">No recent activity to display.</p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -85,7 +110,7 @@ export default function PerformanceDashboard() {
                         <div className="flex flex-col gap-4">
                             <p className="text-[10px] font-bold text-muted-dynamics/60 uppercase tracking-widest px-2">Weekly Pattern</p>
                             <div className="flex justify-between items-end h-24 px-4 bg-white/[0.02] border border-white/5 rounded-2xl p-6">
-                                {[30, 60, 45, 90, 100, 20, 10].map((h, i) => (
+                                {weeklyPattern.map((h, i) => (
                                     <div key={i} className="flex flex-col items-center gap-2 flex-1">
                                         <div style={{ height: `${h}%` }} className={cn('w-1.5 rounded-full transition-all', i === 4 ? 'bg-primary shadow-[0_0_8px_#13c8ec]' : 'bg-white/10')} />
                                         <span className="text-[8px] font-bold text-muted-dynamics/40">{"MTWTFSS"[i]}</span>

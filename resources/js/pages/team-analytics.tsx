@@ -24,8 +24,17 @@ import {
     Monitor
 } from 'lucide-react';
 import React from 'react';
+import type { TeamAnalyticsProps, TeamMember, PulseFeedItem } from '@/types/attendance';
 
-export default function TeamAnalytics() {
+interface PageProps extends TeamAnalyticsProps {}
+
+export default function TeamAnalytics({
+    stats = { presence: 0, activeNow: 0, remote: 0, lateAbsent: 0 },
+    lateMembers = [],
+    remoteMembers = [],
+    pulseFeed = [],
+    energyFlux = [30, 45, 80, 60, 90, 40, 20, 50]
+}: PageProps) {
     return (
         <DashboardLayout title="Team Analytics">
             <div className="flex flex-col lg:flex-row h-full min-h-0 overflow-hidden">
@@ -55,10 +64,10 @@ export default function TeamAnalytics() {
 
                     {/* Stats Row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-                        <StatCard label="Presence" value="88%" trend="+4.2%" trendColor="green" />
-                        <StatCard label="Active Now" value="42" subValue="Members" isPrimary />
-                        <StatCard label="Remote" value="12" subValue="Labs" />
-                        <StatCard label="Late/Absent" value="3" subValue="Today" trend="Action" trendColor="red" />
+                        <StatCard label="Presence" value={`${stats.presence}%`} trend="+4.2%" trendColor="green" />
+                        <StatCard label="Active Now" value={String(stats.activeNow)} subValue="Members" isPrimary />
+                        <StatCard label="Remote" value={String(stats.remote)} subValue="Labs" />
+                        <StatCard label="Late/Absent" value={String(stats.lateAbsent)} subValue="Today" trend="Action" trendColor="red" />
                     </div>
 
                     {/* Attendance Snapshot - Immediate Operational Scanning */}
@@ -68,12 +77,14 @@ export default function TeamAnalytics() {
                                 <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                                     <AlertTriangle className="size-4 text-orange-400" /> Late / Unaccounted
                                 </h3>
-                                <span className="text-[10px] font-bold text-muted-dynamics/40 uppercase">3 Members</span>
+                                <span className="text-[10px] font-bold text-muted-dynamics/40 uppercase">{lateMembers.length} Members</span>
                             </div>
                             <div className="space-y-4">
-                                <TeamMemberRow name="Marcus V." time="42m Late" img="https://i.pravatar.cc/150?u=m" status="late" />
-                                <TeamMemberRow name="Elena R." time="15m Late" img="https://i.pravatar.cc/150?u=e" status="late" />
-                                <TeamMemberRow name="Chen W." time="No Signal" img="https://i.pravatar.cc/150?u=c" status="absent" />
+                                {lateMembers.length > 0 ? lateMembers.slice(0, 3).map((member) => (
+                                    <TeamMemberRow key={member.id} name={member.name} time={member.time || 'Late'} img={member.avatar} status={member.status || 'late'} />
+                                )) : (
+                                    <p className="text-xs text-muted-dynamics/60 italic">No late members</p>
+                                )}
                             </div>
                         </div>
 
@@ -82,12 +93,14 @@ export default function TeamAnalytics() {
                                 <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                                     <Monitor className="size-4 text-primary" /> Remote Active
                                 </h3>
-                                <span className="text-[10px] font-bold text-muted-dynamics/40 uppercase">12 Members</span>
+                                <span className="text-[10px] font-bold text-muted-dynamics/40 uppercase">{remoteMembers.length} Members</span>
                             </div>
                             <div className="space-y-4">
-                                <TeamMemberRow name="Alex R." time="Node-08" img="https://i.pravatar.cc/150?u=alex" status="remote" />
-                                <TeamMemberRow name="Sofia K." time="Node-02" img="https://i.pravatar.cc/150?u=s" status="remote" />
-                                <TeamMemberRow name="James L." time="Node-04" img="https://i.pravatar.cc/150?u=j" status="remote" />
+                                {remoteMembers.length > 0 ? remoteMembers.slice(0, 3).map((member) => (
+                                    <TeamMemberRow key={member.id} name={member.name} time={member.time || 'Remote'} img={member.avatar} status="remote" />
+                                )) : (
+                                    <p className="text-xs text-muted-dynamics/60 italic">No remote members</p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -146,29 +159,28 @@ export default function TeamAnalytics() {
                         </h3>
                     </div>
                     <div className="flex-1 flex flex-col p-4 space-y-4">
-                        <PulseItem 
-                            type="warning" 
-                            title="Collaboration Dip" 
-                            desc="Cross-team sync is 15% lower than normal. Focus blocks might be overlapping." 
-                            action="View Heatmap"
-                        />
-                        <PulseItem 
-                            type="peak" 
-                            title="Peak Productivity" 
-                            desc="The Engineering team just entered 'Hyperfocus' window. 90% active presence detected."
-                            members={['A', 'B', '+12']}
-                        />
-                        <PulseItem 
-                            type="success" 
-                            title="Handoff Success" 
-                            desc="Design to Eng handoff session completed with 100% attendance across 3 timezones."
-                        />
+                        {pulseFeed.length > 0 ? pulseFeed.map((item, index) => (
+                            <PulseItem 
+                                key={index}
+                                type={item.type} 
+                                title={item.title} 
+                                desc={item.desc}
+                                action={item.action}
+                                members={item.members}
+                            />
+                        )) : (
+                            <PulseItem 
+                                type="warning" 
+                                title="No Activity" 
+                                desc="No recent pulse activity to display."
+                            />
+                        )}
 
                         {/* Energy Flux Chart */}
                         <div className="p-4 bg-white/5 border border-white/5 rounded-xl mt-auto">
                             <p className="text-[10px] font-bold text-muted-dynamics uppercase tracking-widest mb-4 text-center">Energy Flux (24h)</p>
                             <div className="flex items-end justify-between h-16 gap-1">
-                                {[30, 45, 80, 60, 90, 40, 20, 50].map((h, i) => (
+                                {energyFlux.map((h, i) => (
                                     <div 
                                         key={i} 
                                         style={{ height: `${h}%` }} 
