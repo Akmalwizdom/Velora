@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CorrectionController;
+use App\Http\Controllers\PerformanceController;
+use App\Http\Controllers\TeamAnalyticsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -11,25 +15,21 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('team-analytics');
-    })->name('dashboard');
+    // All authenticated users
+    Route::get('attendance-hub', [AttendanceController::class, 'hub'])->name('attendance-hub');
+    Route::post('attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
+    Route::post('attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.check-out');
+    Route::get('performance', [PerformanceController::class, 'index'])->name('performance');
 
-    Route::get('team-analytics', function () {
-        return Inertia::render('team-analytics');
-    })->name('team-analytics');
-
-    Route::get('attendance-hub', function () {
-        return Inertia::render('attendance-hub');
-    })->name('attendance-hub');
-
-    Route::get('log-management', function () {
-        return Inertia::render('log-management');
-    })->name('log-management');
-
-    Route::get('performance', function () {
-        return Inertia::render('performance-dashboard');
-    })->name('performance');
+    // HR, Manager, Admin only
+    Route::middleware('role:hr,manager,admin')->group(function () {
+        Route::get('dashboard', [TeamAnalyticsController::class, 'index'])->name('dashboard');
+        Route::get('team-analytics', [TeamAnalyticsController::class, 'index'])->name('team-analytics');
+        Route::get('log-management', [CorrectionController::class, 'index'])->name('log-management');
+        Route::post('corrections/{correction}/approve', [CorrectionController::class, 'approve'])->name('corrections.approve');
+        Route::post('corrections/{correction}/reject', [CorrectionController::class, 'reject'])->name('corrections.reject');
+    });
 });
 
 require __DIR__.'/settings.php';
+

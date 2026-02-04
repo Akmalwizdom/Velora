@@ -13,14 +13,87 @@ import {
     Users,
     MapPin,
     Monitor,
-    Square
+    Square,
+    Loader2
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useForm } from '@inertiajs/react';
+import type { AttendanceHubProps } from '@/types/attendance';
 
-export default function AttendanceHub() {
-    const [sessionActive, setSessionActive] = useState(false);
+interface PageProps extends AttendanceHubProps {}
+
+export default function AttendanceHub({
+    sessionActive: initialSessionActive = false,
+    todayStatus = { status: 'not_checked_in', checkedInAt: null, schedule: '09:00 - 18:00', cluster: 'N/A', workMode: 'office' },
+    weeklyProgress = { hoursWorked: 0, targetHours: 40, percentage: 0 },
+    activeTeamMembers = { members: [], remainingCount: 0, totalActive: 0 },
+    performanceData = { trend: 0, weeklyBars: [0, 0, 0, 0, 0, 0, 0] }
+}: PageProps) {
+    const [sessionActive, setSessionActive] = useState(initialSessionActive);
     const [showNote, setShowNote] = useState(false);
-    const [note, setNote] = useState('');
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+    // Forms for check-in/out
+    const checkInForm = useForm({ work_mode: 'office' as const });
+    const checkOutForm = useForm({ note: '' });
+
+    // Timer effect
+    useEffect(() => {
+        if (!sessionActive || !todayStatus.checkedInAt) return;
+        
+        // Calculate initial elapsed from check-in time
+        const [hours, mins] = todayStatus.checkedInAt.split(':').map(Number);
+        const checkedInDate = new Date();
+        checkedInDate.setHours(hours, mins, 0, 0);
+        const initialElapsed = Math.floor((Date.now() - checkedInDate.getTime()) / 1000);
+        setElapsedSeconds(Math.max(0, initialElapsed));
+
+        const interval = setInterval(() => {
+            setElapsedSeconds(s => s + 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [sessionActive, todayStatus.checkedInAt]);
+
+    const formatTime = (totalSeconds: number) => {
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return {
+            hours: String(hours).padStart(2, '0'),
+            minutes: String(minutes).padStart(2, '0'),
+            seconds: String(seconds).padStart(2, '0'),
+        };
+    };
+
+    const time = formatTime(elapsedSeconds);
+
+    const handleStartSession = () => {
+        checkInForm.post(route('attendance.check-in'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setSessionActive(true);
+                setShowNote(true);
+            },
+        });
+    };
+
+    const handleEndSession = () => {
+        checkOutForm.post(route('attendance.check-out'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setSessionActive(false);
+                setShowNote(false);
+            },
+        });
+    };
+
+    const handleNoteSubmit = () => {
+        setShowNote(false);
+    };
+
+    const isLoading = checkInForm.processing || checkOutForm.processing;
+
     return (
         <DashboardLayout title="Attendance Hub" slimSidebar={true}>
             <div className="flex-1 flex flex-col items-center justify-center relative px-4 md:px-20 py-12 md:py-20 bg-[radial-gradient(circle_at_center,_rgba(19,200,236,0.03)_0%,_transparent_70%)]">
@@ -36,7 +109,7 @@ export default function AttendanceHub() {
                 <div className="absolute top-6 md:top-10 right-6 md:right-10 flex items-center gap-4">
                     <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/5">
                         <Monitor className="size-3.5 text-primary" />
-                        <span className="text-[10px] font-bold tracking-widest text-muted-dynamics uppercase">Work Mode: Remote</span>
+                        <span className="text-[10px] font-bold tracking-widest text-muted-dynamics uppercase">Work Mode: {todayStatus.workMode === 'remote' ? 'Remote' : 'Office'}</span>
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
                         <div className={cn('size-1.5 rounded-full animate-pulse shadow-[0_0_8px_rgba(19,200,236,0.5)]', sessionActive ? 'bg-primary' : 'bg-slate-500')}></div>
@@ -58,7 +131,7 @@ export default function AttendanceHub() {
                             className="text-primary drop-shadow-[0_0_12px_rgba(19,200,236,0.6)]" 
                             cx="50" cy="50" fill="none" r="48" 
                             stroke="currentColor" strokeWidth="2" 
-                            strokeDasharray="301.59" strokeDashoffset="240" 
+                            strokeDasharray="301.59" strokeDashoffset={301.59 - (301.59 * weeklyProgress.percentage / 100)} 
                             strokeLinecap="round" 
                         />
                     </svg>
@@ -72,28 +145,32 @@ export default function AttendanceHub() {
                         
                         {/* Main Timer Component */}
                         <div className="flex gap-2 md:gap-4 items-baseline mb-6 md:mb-8 text-white">
-                            <TimeBlock value="00" label="HRS" />
+                            <TimeBlock value={time.hours} label="HRS" />
                             <span className="text-3xl md:text-5xl font-light text-white/20 leading-none mb-4">:</span>
-                            <TimeBlock value="00" label="MIN" />
+                            <TimeBlock value={time.minutes} label="MIN" />
                             <span className="text-3xl md:text-5xl font-light text-white/20 leading-none mb-4">:</span>
-                            <TimeBlock value="00" label="SEC" isPrimary />
+                            <TimeBlock value={time.seconds} label="SEC" isPrimary />
                         </div>
 
                         {/* Action Button */}
                         {!showNote ? (
                             <button 
-                                onClick={() => {
-                                    setSessionActive(!sessionActive);
-                                    if (!sessionActive) setShowNote(true);
-                                }}
+                                onClick={sessionActive ? handleEndSession : handleStartSession}
+                                disabled={isLoading}
                                 className={cn(
-                                    "group relative px-8 md:px-12 py-3 md:py-4 font-black text-xs md:text-sm tracking-[0.2em] uppercase rounded-xl transition-all flex items-center gap-3 active:scale-95 shadow-xl overflow-hidden",
+                                    "group relative px-8 md:px-12 py-3 md:py-4 font-black text-xs md:text-sm tracking-[0.2em] uppercase rounded-xl transition-all flex items-center gap-3 active:scale-95 shadow-xl overflow-hidden disabled:opacity-50",
                                     sessionActive ? "bg-white/10 text-white border border-white/10" : "bg-primary text-background-dark hover:shadow-[0_0_40px_rgba(19,200,236,0.5)]"
                                 )}
                             >
                                 <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
-                                {sessionActive ? <Square className="size-4 fill-current relative z-10" /> : <Play className="size-4 fill-current relative z-10" />}
-                                <span className="relative z-10">{sessionActive ? 'End Session' : 'Start Session'}</span>
+                                {isLoading ? (
+                                    <Loader2 className="size-4 animate-spin relative z-10" />
+                                ) : sessionActive ? (
+                                    <Square className="size-4 fill-current relative z-10" />
+                                ) : (
+                                    <Play className="size-4 fill-current relative z-10" />
+                                )}
+                                <span className="relative z-10">{isLoading ? 'Processing...' : sessionActive ? 'End Session' : 'Start Session'}</span>
                             </button>
                         ) : (
                             <div className="flex flex-col items-center gap-4 w-full max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -105,13 +182,13 @@ export default function AttendanceHub() {
                                     autoFocus
                                     type="text" 
                                     placeholder="Add context note (optional)..." 
-                                    value={note}
-                                    onChange={(e) => setNote(e.target.value)}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') setShowNote(false); }}
+                                    value={checkOutForm.data.note}
+                                    onChange={(e) => checkOutForm.setData('note', e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleNoteSubmit(); }}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder:text-muted-dynamics/30 focus:border-primary/50 outline-none transition-all"
                                 />
                                 <button 
-                                    onClick={() => setShowNote(false)}
+                                    onClick={handleNoteSubmit}
                                     className="text-[10px] font-black text-muted-dynamics/40 hover:text-white uppercase tracking-widest transition-colors"
                                 >
                                     Skip to Dashboard
@@ -125,19 +202,19 @@ export default function AttendanceHub() {
                 <div className="flex items-center gap-8 mb-12">
                     <div className="flex flex-col items-center gap-1">
                         <span className="text-[9px] font-bold text-muted-dynamics/40 uppercase tracking-widest">Today</span>
-                        <span className="text-xs font-black text-white uppercase">On Time</span>
+                        <span className="text-xs font-black text-white uppercase">{todayStatus.status === 'on_time' ? 'On Time' : todayStatus.status === 'late' ? 'Late' : 'Not Checked In'}</span>
                     </div>
                     <div className="h-4 w-px bg-white/10" />
                     <div className="flex flex-col items-center gap-1">
                         <span className="text-[9px] font-bold text-muted-dynamics/40 uppercase tracking-widest">Schedule</span>
-                        <span className="text-xs font-black text-white uppercase">09:00 - 18:00</span>
+                        <span className="text-xs font-black text-white uppercase">{todayStatus.schedule}</span>
                     </div>
                     <div className="h-4 w-px bg-white/10" />
                     <div className="flex flex-col items-center gap-1">
                         <span className="text-[9px] font-bold text-muted-dynamics/40 uppercase tracking-widest">Cluster</span>
                         <div className="flex items-center gap-1.5">
                             <MapPin className="size-3 text-primary" />
-                            <span className="text-xs font-black text-white uppercase">Node-04</span>
+                            <span className="text-xs font-black text-white uppercase">{todayStatus.cluster}</span>
                         </div>
                     </div>
                 </div>
@@ -151,11 +228,11 @@ export default function AttendanceHub() {
                     >
                         <div className="flex flex-col gap-3 mt-1">
                             <div className="flex justify-between items-baseline">
-                                <p className="text-2xl md:text-3xl font-black text-white leading-none">32.5 <span className="text-xs font-normal text-muted-dynamics uppercase tracking-tighter">/ 40h</span></p>
-                                <span className="text-primary text-[10px] font-bold bg-primary/10 px-2 py-0.5 rounded">81%</span>
+                                <p className="text-2xl md:text-3xl font-black text-white leading-none">{weeklyProgress.hoursWorked} <span className="text-xs font-normal text-muted-dynamics uppercase tracking-tighter">/ {weeklyProgress.targetHours}h</span></p>
+                                <span className="text-primary text-[10px] font-bold bg-primary/10 px-2 py-0.5 rounded">{weeklyProgress.percentage}%</span>
                             </div>
                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(19,200,236,0.6)]" style={{ width: '81%' }}></div>
+                                <div className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(19,200,236,0.6)]" style={{ width: `${weeklyProgress.percentage}%` }}></div>
                             </div>
                         </div>
                     </HubStatCard>
@@ -168,15 +245,17 @@ export default function AttendanceHub() {
                     >
                         <div className="flex items-center gap-4 mt-1">
                             <div className="flex -space-x-3">
-                                {[1, 2, 3, 4].map(i => (
-                                    <div key={i} className="size-10 md:size-11 rounded-full border-2 border-background-dark bg-cover bg-center ring-4 ring-transparent hover:ring-primary/20 transition-all cursor-pointer overflow-hidden shadow-lg" style={{ backgroundImage: `url('https://i.pravatar.cc/150?u=team${i}')` }}>
+                                {activeTeamMembers.members.slice(0, 4).map((member, i) => (
+                                    <div key={member.id || i} className="size-10 md:size-11 rounded-full border-2 border-background-dark bg-cover bg-center ring-4 ring-transparent hover:ring-primary/20 transition-all cursor-pointer overflow-hidden shadow-lg" style={{ backgroundImage: `url('${member.avatar}')` }}>
                                     </div>
                                 ))}
-                                <div className="size-10 md:size-11 rounded-full border-2 border-background-dark bg-surface-dark flex items-center justify-center text-[10px] md:text-[11px] font-bold text-white shadow-lg">+12</div>
+                                {activeTeamMembers.remainingCount > 0 && (
+                                    <div className="size-10 md:size-11 rounded-full border-2 border-background-dark bg-surface-dark flex items-center justify-center text-[10px] md:text-[11px] font-bold text-white shadow-lg">+{activeTeamMembers.remainingCount}</div>
+                                )}
                             </div>
                             <div className="flex flex-col">
                                 <p className="text-white text-xs font-bold leading-tight">Live Cluster</p>
-                                <p className="text-muted-dynamics text-[9px] md:text-[10px] uppercase font-bold tracking-tighter mt-0.5">Currently Synced</p>
+                                <p className="text-muted-dynamics text-[9px] md:text-[10px] uppercase font-bold tracking-tighter mt-0.5">{activeTeamMembers.totalActive} Currently Synced</p>
                             </div>
                         </div>
                     </HubStatCard>
@@ -188,13 +267,13 @@ export default function AttendanceHub() {
                     >
                         <div className="flex flex-col mt-1">
                             <div className="flex justify-between items-center mb-2">
-                                <p className="text-2xl md:text-3xl font-black text-white leading-none">+12.4%</p>
+                                <p className="text-2xl md:text-3xl font-black text-white leading-none">{performanceData.trend >= 0 ? '+' : ''}{performanceData.trend}%</p>
                                 <div className="flex items-center gap-1 text-[8px] md:text-[9px] font-bold text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded">
                                     <TrendingUp className="size-3" /> PEAK
                                 </div>
                             </div>
                             <div className="flex gap-1 h-8 md:h-10 items-end">
-                                {[40, 66, 50, 85, 100, 75, 90].map((h, i) => (
+                                {performanceData.weeklyBars.map((h, i) => (
                                     <div 
                                         key={i} 
                                         style={{ height: `${h}%` }} 

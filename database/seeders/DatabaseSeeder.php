@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,11 +13,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Seed roles and teams first
+        $this->call([
+            RoleSeeder::class,
+            TeamSeeder::class,
+        ]);
+
+        // Create test user with admin role
+        $adminRole = Role::where('name', Role::ADMIN)->first();
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'wizdom',
+            'email' => 'faiqihya@gmail.com',
+            'role_id' => $adminRole?->id,
+        ]);
+
+        // Create a regular employee user
+        $employeeRole = Role::where('name', Role::EMPLOYEE)->first();
+
+        User::factory()->create([
+            'name' => 'Employee',
+            'email' => 'employee@gmail.com',
+            'role_id' => $employeeRole?->id,
         ]);
     }
 }
