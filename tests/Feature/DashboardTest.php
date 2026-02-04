@@ -15,9 +15,12 @@ test('guests are redirected to the login page', function () {
 });
 
 test('authenticated admin users can access the dashboard', function () {
-    // Dashboard requires hr, manager, or admin role
+    // Dashboard requires manager or admin role with active status
     $role = Role::where('name', 'admin')->first();
-    $user = User::factory()->create(['role_id' => $role->id]);
+    $user = User::factory()->create([
+        'role_id' => $role->id,
+        'status' => User::STATUS_ACTIVE,
+    ]);
 
     $response = $this->actingAs($user)->get(route('dashboard'));
     // Should not be 403 (forbidden) or 302 (redirect to login)
@@ -28,8 +31,23 @@ test('authenticated admin users can access the dashboard', function () {
 test('authenticated users without proper role cannot visit the dashboard', function () {
     // Regular employee cannot access dashboard (team analytics)
     $role = Role::where('name', 'employee')->first();
-    $user = User::factory()->create(['role_id' => $role->id]);
+    $user = User::factory()->create([
+        'role_id' => $role->id,
+        'status' => User::STATUS_ACTIVE,
+    ]);
 
     $response = $this->actingAs($user)->get(route('dashboard'));
     $response->assertForbidden();
+});
+
+test('pending users are blocked from accessing protected routes', function () {
+    $role = Role::where('name', 'admin')->first();
+    $user = User::factory()->create([
+        'role_id' => $role->id,
+        'status' => User::STATUS_PENDING,
+    ]);
+
+    $response = $this->actingAs($user)->get(route('dashboard'));
+    // Pending users should be logged out and redirected
+    $response->assertRedirect(route('login'));
 });

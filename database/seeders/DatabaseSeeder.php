@@ -13,28 +13,26 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed roles and teams first
+        // Seed roles and teams first (required dependencies)
         $this->call([
             RoleSeeder::class,
             TeamSeeder::class,
         ]);
 
-        // Create test user with admin role
-        $adminRole = Role::where('name', Role::ADMIN)->first();
+        // Bootstrap the initial system administrator
+        // This only runs once - subsequent runs are skipped
+        $this->call(AdminBootstrapSeeder::class);
 
-        User::factory()->create([
-            'name' => 'wizdom',
-            'email' => 'faiqihya@gmail.com',
-            'role_id' => $adminRole?->id,
-        ]);
+        // Create test employee user (for development only)
+        if (app()->environment('local', 'testing')) {
+            $employeeRole = Role::where('name', Role::EMPLOYEE)->first();
 
-        // Create a regular employee user
-        $employeeRole = Role::where('name', Role::EMPLOYEE)->first();
-
-        User::factory()->create([
-            'name' => 'Employee',
-            'email' => 'employee@gmail.com',
-            'role_id' => $employeeRole?->id,
-        ]);
+            User::factory()->create([
+                'name' => 'Test Employee',
+                'email' => 'employee@velora.test',
+                'role_id' => $employeeRole?->id,
+                'status' => User::STATUS_ACTIVE,
+            ]);
+        }
     }
 }

@@ -1,19 +1,15 @@
 <?php
 
-test('registration screen can be rendered', function () {
-    $response = $this->get(route('register'));
+/**
+ * Registration Tests
+ * 
+ * Note: Public registration is DISABLED in this invite-only system.
+ * These tests verify that registration is properly blocked.
+ */
 
-    $response->assertOk();
-});
+test('registration screen is not accessible (invite-only system)', function () {
+    $response = $this->get('/register');
 
-test('new users can register', function () {
-    $response = $this->post(route('register.store'), [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-    ]);
-
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    // Registration route should return 404 (not found) when registration is disabled
+    $response->assertNotFound();
 });

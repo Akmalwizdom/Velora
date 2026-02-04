@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\CorrectionController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\TeamAnalyticsController;
 use Illuminate\Support\Facades\Route;
@@ -14,7 +15,11 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// Invitation acceptance (public routes - no auth required)
+Route::get('invitation/{token}', [InvitationController::class, 'showAccept'])->name('invitation.accept');
+Route::post('invitation/{token}', [InvitationController::class, 'accept'])->name('invitation.accept.store');
+
+Route::middleware(['auth', 'verified', 'active'])->group(function () {
     // All authenticated users
     Route::get('attendance-hub', [AttendanceController::class, 'hub'])->name('attendance-hub');
     Route::post('attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
@@ -33,7 +38,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('corrections/{correction}/approve', [CorrectionController::class, 'approve'])->name('corrections.approve');
         Route::post('corrections/{correction}/reject', [CorrectionController::class, 'reject'])->name('corrections.reject');
     });
+
+    // Admin only: Invitation management
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
+        Route::post('invitations', [InvitationController::class, 'store'])->name('invitations.store');
+        Route::post('invitations/{invitation}/resend', [InvitationController::class, 'resend'])->name('invitations.resend');
+        Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
+    });
 });
 
 require __DIR__.'/settings.php';
-

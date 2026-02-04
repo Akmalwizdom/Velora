@@ -27,6 +27,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
+        'status',
     ];
 
     /**
@@ -55,6 +56,28 @@ class User extends Authenticatable
         ];
     }
 
+    // Boot
+
+    protected static function booted(): void
+    {
+        // Enforce default Employee role on creation
+        static::creating(function (User $user) {
+            if (!$user->role_id) {
+                $user->role_id = Role::getEmployeeId();
+            }
+            // Default status to pending for new users
+            if (!$user->status) {
+                $user->status = 'pending';
+            }
+        });
+    }
+
+    // Constants
+
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_SUSPENDED = 'suspended';
+
     // Relationships
 
     public function role(): BelongsTo
@@ -77,6 +100,38 @@ class User extends Authenticatable
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class);
+    }
+
+    public function invitation(): HasOne
+    {
+        return $this->hasOne(Invitation::class, 'email', 'email');
+    }
+
+    // Status Helpers
+
+    public function isActive(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status === self::STATUS_SUSPENDED;
+    }
+
+    public function activate(): void
+    {
+        $this->update(['status' => self::STATUS_ACTIVE]);
+    }
+
+    public function suspend(): void
+    {
+        $this->update(['status' => self::STATUS_SUSPENDED]);
     }
 
     // RBAC Helpers
