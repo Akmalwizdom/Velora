@@ -28,13 +28,11 @@ export default function DashboardLayout({ children, title, slimSidebar = false }
 
             <AppNavSidebar slim={slimSidebar} />
 
-            <main className="flex-1 flex flex-col overflow-hidden relative z-10">
+            <main className="flex-1 flex flex-col min-h-0 relative z-10">
                 {/* Top Navigation */}
                 <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-8 bg-header-background/50 backdrop-blur-md shrink-0">
                     <div className="flex items-center gap-4 flex-1">
-                        <div className="md:hidden">
-                            <SidebarTrigger />
-                        </div>
+                        <SidebarTrigger />
                         <label className="hidden md:flex items-center w-full max-w-md h-9 bg-white/5 rounded-lg border border-white/5 px-3 gap-2 group focus-within:border-primary/30 transition-all cursor-text">
                             <Search className="size-5 text-muted-dynamics group-focus-within:text-primary transition-colors" />
                             <input 
@@ -84,7 +82,7 @@ export default function DashboardLayout({ children, title, slimSidebar = false }
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 overflow-y-auto custom-scrollbar relative">
                     {children}
                 </div>
             </main>

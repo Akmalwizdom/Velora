@@ -28,7 +28,7 @@ import React from 'react';
 export default function TeamAnalytics() {
     return (
         <DashboardLayout title="Team Analytics">
-            <div className="flex flex-col lg:flex-row min-h-full overflow-hidden">
+            <div className="flex flex-col lg:flex-row h-full min-h-0 overflow-hidden">
                 {/* Center Dashboard */}
                 <div className="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto custom-scrollbar">
                     {/* Page Heading */}

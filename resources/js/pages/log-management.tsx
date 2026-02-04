@@ -19,7 +19,7 @@ import React from 'react';
 export default function LogManagement() {
     return (
         <DashboardLayout title="Compliance & Trust">
-            <div className="flex flex-col lg:flex-row h-full overflow-hidden">
+            <div className="flex flex-col lg:flex-row h-full min-h-0 overflow-hidden">
                 {/* Main Compliance View */}
                 <div className="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto custom-scrollbar">
                     {/* Breadcrumbs */}

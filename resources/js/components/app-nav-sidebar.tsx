@@ -32,13 +32,13 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
 
     return (
         <Sidebar collapsible="icon" className="border-r border-white/5 bg-sidebar-background">
-            <SidebarHeader className="p-6">
-                <div className="flex items-center gap-3">
+            <SidebarHeader className={cn('p-6 transition-all duration-300', isCollapsed && 'p-4 flex justify-center')}>
+                <div className={cn("flex items-center gap-3", isCollapsed && "gap-0")}>
                     <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-background-dark shrink-0">
                         <Zap className="size-5 fill-current" />
                     </div>
                     {state === 'expanded' && (
-                        <div className="flex flex-col overflow-hidden">
+                        <div className="flex flex-col overflow-hidden animate-in fade-in slide-in-from-left-2 duration-300">
                             <h1 className="text-white text-base font-bold leading-tight uppercase tracking-tight truncate">Dynamics</h1>
                             <p className="text-muted-dynamics text-xs font-normal truncate">Remote HQ</p>
                         </div>
@@ -46,8 +46,8 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="px-4 py-2">
-                <SidebarMenu className="gap-2">
+            <SidebarContent className={cn("px-4 py-2 transition-all duration-300", isCollapsed && "px-0")}>
+                <SidebarMenu className={cn("gap-2", isCollapsed && "items-center")}>
                     {navItems.map((item) => {
                         const active = url.startsWith(item.href);
                         return (
@@ -57,15 +57,15 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
                                     isActive={active}
                                     tooltip={item.name}
                                     className={cn(
-                                        'h-11 px-3 rounded-xl transition-all duration-200 group bg-transparent focus-visible:ring-2 focus-visible:ring-primary outline-none',
-                                        active 
-                                            ? 'bg-primary/10 text-primary font-bold shadow-[0_4px_12px_rgba(19,200,236,0.15)] hover:bg-primary/20' 
-                                            : 'text-muted-dynamics hover:bg-white/5 hover:text-white'
+                                        'h-12 px-3 rounded-xl transition-all duration-200 group bg-transparent focus-visible:ring-2 focus-visible:ring-primary outline-none',
+                                        isCollapsed && 'px-0 justify-center h-12 w-12',
+                                        !isCollapsed && active && 'bg-primary/10 text-primary font-bold shadow-[0_4px_12px_rgba(19,200,236,0.15)] hover:bg-primary/20',
+                                        !isCollapsed && !active && 'text-muted-dynamics hover:bg-white/5 hover:text-white'
                                     )}
                                 >
                                     <Link href={item.href} className="flex items-center gap-3 w-full">
-                                        <item.icon className={cn('size-5 shrink-0', active ? 'text-primary' : 'text-muted-dynamics group-hover:text-white')} />
-                                        <span className="text-sm font-medium">{item.name}</span>
+                                        <item.icon className={cn('size-7 shrink-0', active ? 'text-primary' : 'text-muted-dynamics group-hover:text-white')} />
+                                        {state === 'expanded' && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">{item.name}</span>}
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
@@ -74,9 +74,9 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
                 </SidebarMenu>
             </SidebarContent>
 
-            <SidebarFooter className="p-4 flex flex-col gap-4">
+            <SidebarFooter className={cn('p-4 flex flex-col gap-4 transition-all duration-300', isCollapsed && 'px-2 py-4')}>
                 {state === 'expanded' && (
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5 mx-2">
+                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5 mx-2 animate-in fade-in zoom-in-95 duration-300">
                         <p className="text-[10px] uppercase tracking-[0.2em] text-muted-dynamics mb-2 font-black">System Status</p>
                         <div className="flex items-center gap-2">
                             <div className="size-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(19,200,236,0.6)]"></div>
@@ -89,27 +89,30 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
                     aria-label="Invite new team member"
                     className={cn(
                         "w-full py-3 bg-primary text-background-dark rounded-xl text-sm font-black flex items-center justify-center gap-2 hover:shadow-[0_4px_20px_rgba(19,200,236,0.3)] transition-all active:scale-95 mb-2",
-                        isCollapsed && "size-10 p-0 rounded-lg"
+                        isCollapsed && "size-12 p-0 rounded-full mx-auto"
                     )}
                 >
-                    <UserPlus className="size-4" />
-                    {state === 'expanded' && "Invite Member"}
+                    <UserPlus className="size-6" />
+                    {state === 'expanded' && <span className="animate-in fade-in slide-in-from-left-2 duration-300">Invite Member</span>}
                 </button>
                 
-                <SidebarMenu className="gap-1 border-t border-white/5 pt-4">
+                <SidebarMenu className={cn('gap-1 border-t border-white/5 pt-4', isCollapsed && 'items-center')}>
                     {bottomItems.map((item) => (
                         <SidebarMenuItem key={item.name}>
                             <SidebarMenuButton
                                 asChild
                                 tooltip={item.name}
-                                className="h-10 px-3 text-muted-dynamics hover:bg-white/5 hover:text-white rounded-lg focus-visible:ring-2 focus-visible:ring-primary outline-none translate-x-1"
+                                className={cn(
+                                    "h-12 px-3 text-muted-dynamics hover:bg-white/5 hover:text-white rounded-lg focus-visible:ring-2 focus-visible:ring-primary outline-none translate-x-1",
+                                    isCollapsed && "translate-x-0 mx-auto px-0 justify-center h-12 w-12"
+                                )}
                             >
                                 <Link href={item.href} className="flex items-center gap-3">
-                                    <item.icon className="size-4 shrink-0" />
-                                    <span className="text-[10px] font-bold uppercase tracking-widest">{item.name}</span>
+                                    <item.icon className="size-7 shrink-0" />
+                                    {state === 'expanded' && <span className="text-[10px] font-bold uppercase tracking-widest animate-in fade-in slide-in-from-left-2 duration-300">{item.name}</span>}
                                 </Link>
                             </SidebarMenuButton>
-                        </SidebarMenuItem>
+                                                      </SidebarMenuItem>
                     ))}
                 </SidebarMenu>
             </SidebarFooter>

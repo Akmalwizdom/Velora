@@ -23,7 +23,7 @@ export default function AttendanceHub() {
     const [note, setNote] = useState('');
     return (
         <DashboardLayout title="Attendance Hub" slimSidebar={true}>
-            <div className="flex-1 flex flex-col items-center justify-center relative px-4 md:px-20 min-h-full py-12 md:py-20 overflow-y-auto custom-scrollbar bg-[radial-gradient(circle_at_center,_rgba(19,200,236,0.03)_0%,_transparent_70%)]">
+            <div className="flex-1 flex flex-col items-center justify-center relative px-4 md:px-20 py-12 md:py-20 bg-[radial-gradient(circle_at_center,_rgba(19,200,236,0.03)_0%,_transparent_70%)]">
                 {/* Top Path / Breadcrumbs - Embedded in page for fidelity */}
                 <div className="absolute top-6 md:top-10 left-6 md:left-10 flex items-center gap-4">
                     <div className="flex flex-wrap gap-2 items-center">
