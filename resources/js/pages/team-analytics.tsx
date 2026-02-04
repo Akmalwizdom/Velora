@@ -1,218 +1,290 @@
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/glass-panel';
+import { StatCard } from '@/components/ui/stat-card';
+import { PulseItem } from '@/components/ui/pulse-item';
 import DashboardLayout from '@/layouts/app-dashboard-layout';
 import { 
     Activity, 
-    Bell, 
     ChevronRight, 
+    Filter, 
+    History, 
     MessageSquare, 
     MoreHorizontal, 
+    Play, 
     Search, 
+    Send, 
+    Share2, 
+    ShieldCheck, 
     TrendingUp, 
     Users, 
-    Zap 
+    Zap,
+    HelpCircle,
+    Info,
+    AlertTriangle,
+    Monitor
 } from 'lucide-react';
 import React from 'react';
 
 export default function TeamAnalytics() {
     return (
         <DashboardLayout title="Team Analytics">
-            {/* Header Area */}
-            <div className="flex items-center justify-between mb-10">
-                <div className="flex-1 max-w-xl">
-                    <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Search team dynamics or members..."
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
-                        />
-                    </div>
-                </div>
-
-                <div className="flex items-center space-x-6">
-                    <div className="flex items-center space-x-3 px-4 py-2 bg-primary/10 rounded-xl border border-primary/20">
-                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        <span className="text-sm font-medium text-primary">42 Active Sessions</span>
-                    </div>
-                    
-                    <button className="relative p-2 text-gray-400 hover:text-white transition-colors">
-                        <Bell className="w-6 h-6" />
-                        <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background-dark" />
-                    </button>
-                    
-                    <div className="flex items-center space-x-3 pl-6 border-l border-white/10">
-                        <div className="text-right">
-                            <p className="text-sm font-semibold">Alex Rivera</p>
-                            <p className="text-xs text-gray-500">Sr. Tech Lead</p>
+            <div className="flex flex-col lg:flex-row min-h-full overflow-hidden">
+                {/* Center Dashboard */}
+                <div className="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto custom-scrollbar">
+                    {/* Page Heading */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8">
+                        <div>
+                            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-2">Team Presence Overview</h2>
+                            <p className="text-muted-dynamics text-base md:text-lg">Atmospheric real-time map of your distributed workspace.</p>
                         </div>
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-blue-500 overflow-hidden" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Page Title & Breadcrumbs */}
-            <div className="mb-10">
-                <h1 className="text-4xl font-display font-bold mb-2 tracking-tight">Team Dynamics Overview</h1>
-                <p className="text-gray-400">Atmospheric monitoring of team synergy and productivity flows.</p>
-            </div>
-
-            {/* Stats Row */}
-            <div className="grid grid-cols-4 gap-6 mb-10">
-                <StatCard 
-                    label="Presence Velocity" 
-                    value="94.2%" 
-                    trend="+1.2%" 
-                    icon={TrendingUp} 
-                    color="primary"
-                />
-                <StatCard 
-                    label="Avg Sentiment" 
-                    value="Positive" 
-                    trend="Stable" 
-                    icon={MessageSquare} 
-                    color="blue"
-                />
-                <StatCard 
-                    label="Conflict Index" 
-                    value="0.12" 
-                    trend="-0.04" 
-                    icon={Activity} 
-                    color="red"
-                />
-                <StatCard 
-                    label="Network Density" 
-                    value="0.68" 
-                    trend="+0.05" 
-                    icon={Users} 
-                    color="purple"
-                />
-            </div>
-
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-3 gap-8">
-                {/* Atmospheric Map */}
-                <GlassPanel className="col-span-2 p-8 h-[600px] flex flex-col relative overflow-hidden">
-                    <div className="flex items-center justify-between mb-8 relative z-10">
-                        <h3 className="text-xl font-display font-bold">Atmospheric Map</h3>
-                        <div className="flex space-x-2">
-                             <div className="flex items-center space-x-2 px-3 py-1 bg-white/5 rounded-lg border border-white/10 text-xs">
-                                <span className="w-2 h-2 rounded-full bg-primary" />
-                                <span>Core Engineering</span>
-                             </div>
-                             <div className="flex items-center space-x-2 px-3 py-1 bg-white/5 rounded-lg border border-white/10 text-xs">
-                                <span className="w-2 h-2 rounded-full bg-blue-500" />
-                                <span>UX / Design</span>
-                             </div>
+                        <div className="flex gap-3 w-full sm:w-auto">
+                            <button 
+                                aria-label="Filter Map View"
+                                className="flex-1 sm:flex-none px-4 py-2 rounded-lg border border-white/10 text-white text-sm font-bold flex items-center justify-center gap-2 hover:bg-white/5 transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none"
+                            >
+                                <Filter className="size-4" /> Filter
+                            </button>
+                            <button 
+                                aria-label="Export Insights"
+                                className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-primary text-background-dark text-sm font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all focus-visible:ring-2 focus-visible:ring-white outline-none"
+                            >
+                                <Share2 className="size-4" /> Export
+                            </button>
                         </div>
                     </div>
 
-                    {/* Simple Visualization Placeholder */}
-                    <div className="flex-1 flex items-center justify-center relative">
-                        {/* Center Orb */}
-                        <div className="w-48 h-48 rounded-full bg-primary/20 blur-3xl animate-pulse" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <svg className="w-full h-full max-h-[400px]" viewBox="0 0 200 200">
-                                {/* Orbit lines */}
-                                <circle cx="100" cy="100" r="40" fill="none" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.1" className="text-primary" />
-                                <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" strokeWidth="0.5" strokeOpacity="0.1" className="text-primary" />
-                                
-                                {/* Connection lines */}
-                                <line x1="100" y1="100" x2="60" y2="60" stroke="currentColor" strokeWidth="1" strokeOpacity="0.2" className="text-primary" />
-                                <line x1="100" y1="100" x2="140" y2="80" stroke="currentColor" strokeWidth="1" strokeOpacity="0.2" className="text-primary" />
-                                <line x1="100" y1="100" x2="90" y2="150" stroke="currentColor" strokeWidth="1" strokeOpacity="0.2" className="text-primary" />
-                                
-                                {/* Nodes */}
-                                <circle cx="100" cy="100" r="4" className="fill-primary orb-glow" />
-                                <circle cx="60" cy="60" r="3" className="fill-blue-500" />
-                                <circle cx="140" cy="80" r="3" className="fill-cyan-400" />
-                                <circle cx="90" cy="150" r="3" className="fill-blue-600" />
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+                        <StatCard label="Presence" value="88%" trend="+4.2%" trendColor="green" />
+                        <StatCard label="Active Now" value="42" subValue="Members" isPrimary />
+                        <StatCard label="Remote" value="12" subValue="Labs" />
+                        <StatCard label="Late/Absent" value="3" subValue="Today" trend="Action" trendColor="red" />
+                    </div>
+
+                    {/* Attendance Snapshot - Immediate Operational Scanning */}
+                    <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                                    <AlertTriangle className="size-4 text-orange-400" /> Late / Unaccounted
+                                </h3>
+                                <span className="text-[10px] font-bold text-muted-dynamics/40 uppercase">3 Members</span>
+                            </div>
+                            <div className="space-y-4">
+                                <TeamMemberRow name="Marcus V." time="42m Late" img="https://i.pravatar.cc/150?u=m" status="late" />
+                                <TeamMemberRow name="Elena R." time="15m Late" img="https://i.pravatar.cc/150?u=e" status="late" />
+                                <TeamMemberRow name="Chen W." time="No Signal" img="https://i.pravatar.cc/150?u=c" status="absent" />
+                            </div>
+                        </div>
+
+                        <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                                    <Monitor className="size-4 text-primary" /> Remote Active
+                                </h3>
+                                <span className="text-[10px] font-bold text-muted-dynamics/40 uppercase">12 Members</span>
+                            </div>
+                            <div className="space-y-4">
+                                <TeamMemberRow name="Alex R." time="Node-08" img="https://i.pravatar.cc/150?u=alex" status="remote" />
+                                <TeamMemberRow name="Sofia K." time="Node-02" img="https://i.pravatar.cc/150?u=s" status="remote" />
+                                <TeamMemberRow name="James L." time="Node-04" img="https://i.pravatar.cc/150?u=j" status="remote" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Atmospheric Map Container */}
+                    <div className="flex-1 min-h-[400px] md:min-h-[500px] relative rounded-2xl bg-[#0a1214] border border-white/5 overflow-hidden grid-bg">
+                        {/* Legend */}
+                        <div className="absolute top-4 left-4 md:top-6 md:left-6 flex flex-col gap-2 z-10">
+                            <LegendItem color="bg-primary" label="Deep Focus" active />
+                            <LegendItem color="bg-white/40" label="Collaborating" />
+                            <LegendItem color="bg-[#3b4f54]" label="Away" />
+                        </div>
+
+                        {/* Map Visualization (CSS/SVG) */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                            <svg className="w-full h-full" viewBox="0 0 800 500">
+                                <path d="M150,150 L400,300 M400,300 L650,120 M150,150 L200,400 M400,300 L350,100" fill="none" stroke="#13c8ec" strokeWidth="0.5" />
+                                <circle cx="150" cy="150" fill="#13c8ec" r="2" />
+                                <circle cx="400" cy="300" fill="#13c8ec" r="2" />
+                                <circle cx="650" cy="120" fill="#13c8ec" r="2" />
                             </svg>
                         </div>
-                        
-                        {/* Dynamic Floating Tooltip */}
-                        <div className="absolute top-1/4 right-1/4">
-                            <GlassPanel className="p-3 border-primary/30 radial-glow">
-                                <div className="flex items-center space-x-2 mb-1">
-                                    <div className="w-6 h-6 rounded bg-primary/20" />
-                                    <span className="text-sm font-bold">Frontend Core</span>
+
+                        {/* Interactive Nodes - Responsive Positioning (Simple Scale) */}
+                        <MapNode top="20%" left="15%" name="Sarah D." status="focus" img="https://i.pravatar.cc/150?u=sarah" />
+                        <MapNode top="55%" left="45%" status="collab" count={5} />
+                        <MapNode top="30%" right="20%" status="away" name="User" img="https://i.pravatar.cc/150?u=away" />
+
+                        {/* Time Travel Slider */}
+                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-xl px-4 md:px-10">
+                            <div className="bg-header-background/80 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-4 flex items-center gap-4 md:gap-6">
+                                <button aria-label="Play Time-lapse" className="text-muted-dynamics hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-primary rounded-full outline-none">
+                                    <Play className="size-5 fill-current" />
+                                </button>
+                                <div className="flex-1 flex flex-col gap-2">
+                                    <div className="flex justify-between text-[10px] font-bold text-muted-dynamics uppercase tracking-widest">
+                                        <span>08:00</span>
+                                        <span className="text-primary">14:24 (Live)</span>
+                                        <span>20:00</span>
+                                    </div>
+                                    <div className="relative h-1 bg-white/10 rounded-full">
+                                        <div className="absolute inset-y-0 left-0 w-[65%] bg-primary rounded-full" />
+                                        <div className="absolute top-1/2 left-[65%] -translate-x-1/2 -translate-y-1/2 size-3 bg-white rounded-full ring-4 ring-primary/20" />
+                                    </div>
                                 </div>
-                                <p className="text-[10px] text-gray-400">High Synergy Loop detected</p>
-                            </GlassPanel>
+                            </div>
                         </div>
                     </div>
-                </GlassPanel>
-
-                {/* Dynamics Feed */}
-                <div className="space-y-6">
-                    <h3 className="text-xl font-display font-bold">Dynamics Feed</h3>
-                    <div className="space-y-4">
-                        <FeedItem 
-                            time="10:24 AM" 
-                            title="Cross-department Sync" 
-                            desc="Engineering and Design clusters merge for V2 sprint." 
-                            type="merge"
-                        />
-                        <FeedItem 
-                            time="09:15 AM" 
-                            title="Velocity Peak" 
-                            desc="Core systems reached 98.4% performance threshold." 
-                            type="peak"
-                        />
-                         <FeedItem 
-                            time="08:30 AM" 
-                            title="Session Pulse" 
-                            desc="All units established connection. 0% dropout rate." 
-                            type="system"
-                        />
-                    </div>
-
-                    <button className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center space-x-2 group">
-                        <span className="font-medium">Analyze Full History</span>
-                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </button>
                 </div>
+
+                {/* Pulse Feed Sidebar */}
+                <aside className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-white/5 bg-header-background flex flex-col shrink-0">
+                    <div className="p-6 border-b border-white/5">
+                        <h3 className="text-lg font-bold flex items-center gap-2 text-white">
+                            <Activity className="size-5 text-primary" /> Pulse Feed
+                        </h3>
+                    </div>
+                    <div className="flex-1 flex flex-col p-4 space-y-4">
+                        <PulseItem 
+                            type="warning" 
+                            title="Collaboration Dip" 
+                            desc="Cross-team sync is 15% lower than normal. Focus blocks might be overlapping." 
+                            action="View Heatmap"
+                        />
+                        <PulseItem 
+                            type="peak" 
+                            title="Peak Productivity" 
+                            desc="The Engineering team just entered 'Hyperfocus' window. 90% active presence detected."
+                            members={['A', 'B', '+12']}
+                        />
+                        <PulseItem 
+                            type="success" 
+                            title="Handoff Success" 
+                            desc="Design to Eng handoff session completed with 100% attendance across 3 timezones."
+                        />
+
+                        {/* Energy Flux Chart */}
+                        <div className="p-4 bg-white/5 border border-white/5 rounded-xl mt-auto">
+                            <p className="text-[10px] font-bold text-muted-dynamics uppercase tracking-widest mb-4 text-center">Energy Flux (24h)</p>
+                            <div className="flex items-end justify-between h-16 gap-1">
+                                {[30, 45, 80, 60, 90, 40, 20, 50].map((h, i) => (
+                                    <div 
+                                        key={i} 
+                                        style={{ height: `${h}%` }} 
+                                        className={cn('w-2 rounded-t transition-all', h > 70 ? 'bg-primary' : 'bg-white/20')} 
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-4 border-t border-white/5">
+                        <button className="w-full py-2 bg-white/5 text-white rounded-lg text-sm font-bold hover:bg-white/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary outline-none">
+                            Manage Notifications
+                        </button>
+                    </div>
+                </aside>
             </div>
         </DashboardLayout>
     );
 }
 
-function StatCard({ label, value, trend, icon: Icon, color }: { label: string, value: string, trend: string, icon: any, color: 'primary' | 'blue' | 'red' | 'purple' }) {
-    const colors = {
-        primary: 'text-primary bg-primary/10 border-primary/20',
-        blue: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
-        red: 'text-red-500 bg-red-500/10 border-red-500/20',
-        purple: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
-    };
-
-    return (
-        <GlassPanel className="p-6">
-            <div className="flex items-start justify-between mb-4">
-                <div className={cn('p-2.5 rounded-xl border', colors[color])}>
-                    <Icon className="w-6 h-6" />
-                </div>
-                <button className="text-gray-500 hover:text-white transition-colors">
-                    <MoreHorizontal className="w-5 h-5" />
-                </button>
-            </div>
-            <p className="text-gray-400 text-sm mb-1">{label}</p>
-            <div className="flex items-end justify-between leading-none">
-                <h2 className="text-2xl font-display font-bold">{value}</h2>
-                <span className={cn('text-xs font-bold px-2 py-1 rounded-lg', trend.startsWith('+') ? 'text-green-400 bg-green-400/10' : trend.startsWith('-') ? 'text-red-400 bg-red-400/10' : 'text-gray-400 bg-gray-400/10')}>
-                    {trend}
-                </span>
-            </div>
-        </GlassPanel>
-    );
+interface LegendItemProps {
+    color: string;
+    label: string;
+    active?: boolean;
 }
 
-function FeedItem({ time, title, desc, type }: any) {
+function LegendItem({ color, label, active }: LegendItemProps) {
     return (
-        <div className="group relative pl-8 pb-6 border-l border-white/10 last:pb-0">
-            <div className="absolute left-[-5px] top-0 w-[9px] h-[9px] rounded-full bg-primary ring-4 ring-primary/20 group-hover:scale-125 transition-transform" />
-            <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase mb-1">{time}</p>
-            <h4 className="text-sm font-semibold mb-1 group-hover:text-primary transition-colors">{title}</h4>
-            <p className="text-xs text-gray-400 leading-relaxed">{desc}</p>
+        <div className="flex items-center gap-2 text-[10px] text-muted-dynamics uppercase font-bold tracking-widest">
+            <span className={cn('size-2 rounded-full', color, active && 'orb-glow')} />
+            {label}
         </div>
     );
 }
+
+interface MapNodeProps {
+    top?: string;
+    left?: string;
+    right?: string;
+    name?: string;
+    status: 'focus' | 'away' | 'collab';
+    img?: string;
+    count?: number;
+}
+
+function MapNode({ top, left, right, name, status, img, count }: MapNodeProps) {
+    const isFocus = status === 'focus';
+    const isAway = status === 'away';
+    const isCollab = status === 'collab';
+
+    return (
+        <div 
+            className="absolute flex flex-col items-center group cursor-pointer" 
+            style={{ top, left, right }}
+        >
+            {isCollab ? (
+                <div className="flex -space-x-4">
+                    {[1, 2].map(i => (
+                        <div key={i} className="size-10 md:size-12 rounded-full border-2 border-[#0a1214] bg-surface-dark overflow-hidden transition-transform group-hover:scale-110">
+                            <img src={`https://i.pravatar.cc/150?u=collab${i}`} alt="Collaborator" className="size-full object-cover" />
+                        </div>
+                    ))}
+                    <div className="size-10 md:size-12 rounded-full border-2 border-[#0a1214] bg-surface-dark flex items-center justify-center text-[10px] font-bold text-white group-hover:scale-110 transition-transform">
+                        +{count}
+                    </div>
+                </div>
+            ) : (
+                <div className={cn(
+                    'relative transition-all duration-300 group-hover:scale-110',
+                    isAway ? 'opacity-40 grayscale hover:opacity-60 hover:grayscale-0' : 'opacity-100'
+                )}>
+                    <div className={cn(
+                        'size-12 md:size-16 rounded-full border flex items-center justify-center p-1 bg-white/5',
+                        isFocus ? 'border-primary/40 bg-primary/10 orb-glow' : 'border-white/10'
+                    )}>
+                        <img src={img} className="size-full rounded-full bg-cover" alt={name || "User"} />
+                    </div>
+                    {isFocus && (
+                        <div className="absolute -bottom-1 -right-1 size-4 bg-primary rounded-full border-2 border-[#0a1214] flex items-center justify-center shadow-lg">
+                            <Zap className="text-background-dark size-2.5 fill-current" />
+                        </div>
+                    )}
+                </div>
+            )}
+            {name && <p className={cn('text-[10px] font-bold mt-2 uppercase tracking-tight', isFocus ? 'text-primary' : 'text-muted-dynamics')}>{name}</p>}
+            {isAway && <p className="text-[9px] font-bold mt-1 text-muted-dynamics uppercase">Away</p>}
+            {isCollab && (
+                <div className="mt-2">
+                    <span className="px-2 py-0.5 rounded-full bg-white/10 text-[9px] font-bold text-white uppercase tracking-tighter shadow-sm">Sync: API Refactor</span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function TeamMemberRow({ name, time, img, status }: any) {
+    return (
+        <div className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 -mx-2 rounded-xl transition-all">
+            <div className="flex items-center gap-3">
+                <div className="size-8 rounded-full border border-white/10 overflow-hidden">
+                    <img src={img} className="size-full object-cover" alt={name} />
+                </div>
+                <div>
+                    <p className="text-xs font-bold text-white mb-0.5">{name}</p>
+                    <p className="text-[10px] text-muted-dynamics/60 font-medium uppercase tracking-tighter">{time}</p>
+                </div>
+            </div>
+            <div className={cn(
+                "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
+                status === 'late' ? "bg-orange-500/10 text-orange-400" :
+                status === 'absent' ? "bg-red-500/10 text-red-400" : "bg-primary/10 text-primary"
+            )}>
+                {status}
+            </div>
+        </div>
+    );
+}
+
+

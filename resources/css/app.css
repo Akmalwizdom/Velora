@@ -12,7 +12,7 @@
         'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
-    
+
     --font-display:
         'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
 
@@ -29,14 +29,15 @@
     --color-popover: var(--popover);
     --color-popover-foreground: var(--popover-foreground);
 
-    /* Use Velora Primary */
-    --color-primary: #13c8ec;
-    --color-primary-foreground: #0a0b0d;
+    --color-background-dark: var(--background-dark);
+    --color-surface-dark: var(--surface-dark);
+    --color-sidebar-background: var(--sidebar-background);
+    --color-header-background: var(--header-background);
+    --color-accent-dynamics: var(--accent-dynamics);
+    --color-muted-dynamics: var(--muted-dynamics);
 
-    /* Velora Specific Backgrounds */
-    --color-background-dark: #0a0b0d;
-    --color-surface-dark: #161b1d;
-    --color-background-dynamics: #101f22;
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
 
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
@@ -73,14 +74,25 @@
 }
 
 :root {
+    /* Dynamics Core Palette */
+    --accent-dynamics: #13c8ec;
+    --background-dark: #0a0b0d;
+    --surface-dark: #161b1d;
+    --header-background: #111718;
+    --sidebar-background: #0a0b0d;
+    --muted-dynamics: #9db4b9;
+    --scrollbar-thumb: #283639;
+
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
+
+    --primary: var(--accent-dynamics);
+    --primary-foreground: var(--background-dark);
+
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
@@ -88,24 +100,19 @@
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(1 1 1);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
     --ring: oklch(0.87 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+
+    --sidebar: var(--sidebar-background);
+    --sidebar-foreground: var(--muted-dynamics);
+    --sidebar-primary: var(--accent-dynamics);
+    --sidebar-primary-foreground: var(--background-dark);
+    --sidebar-accent: rgba(19, 200, 236, 0.1);
+    --sidebar-accent-foreground: var(--accent-dynamics);
+    --sidebar-border: rgba(255, 255, 255, 0.05);
+    --sidebar-ring: var(--accent-dynamics);
 }
 
 .dark {
@@ -156,7 +163,7 @@
 @layer utilities {
     .grid-bg {
         background-image: linear-gradient(var(--color-grid-line) 1px, transparent 1px),
-                          linear-gradient(90deg, var(--color-grid-line) 1px, transparent 1px);
+            linear-gradient(90deg, var(--color-grid-line) 1px, transparent 1px);
         background-size: 40px 40px;
     }
 
@@ -182,11 +189,13 @@
     .custom-scrollbar::-webkit-scrollbar {
         width: 4px;
     }
+
     .custom-scrollbar::-webkit-scrollbar-track {
         background: transparent;
     }
+
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #283639;
+        background: var(--scrollbar-thumb);
         border-radius: 10px;
     }
 }

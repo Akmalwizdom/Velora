@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Shield, User, Zap } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -18,9 +18,24 @@ import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: dashboard(),
+        title: 'Team Analytics',
+        href: '/team-analytics',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Attendance Hub',
+        href: '/attendance-hub',
+        icon: Zap,
+    },
+    {
+        title: 'Log Manager',
+        href: '/log-management',
+        icon: Shield,
+    },
+    {
+        title: 'Performance',
+        href: '/performance',
+        icon: User,
     },
 ];
 

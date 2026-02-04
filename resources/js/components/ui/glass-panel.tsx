@@ -24,7 +24,7 @@ export function GlassPanel({
             className={cn(
                 'rounded-xl border border-white/10 transition-all duration-300',
                 intensities[intensity],
-                hoverable && 'hover:bg-white/15 hover:border-white/20 hover:translate-y-[-2px] cursor-pointer',
+                hoverable && 'hover:bg-white/15 hover:border-white/20 hover:scale-[1.01] cursor-pointer',
                 className
             )}
             {...props}

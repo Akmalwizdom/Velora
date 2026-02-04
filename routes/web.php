@@ -12,7 +12,7 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+        return Inertia::render('team-analytics');
     })->name('dashboard');
 
     Route::get('team-analytics', function () {
