@@ -85,7 +85,8 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
                     </div>
                 )}
                 
-                <button 
+                <Link 
+                    href="/admin/invitations"
                     aria-label="Invite new team member"
                     className={cn(
                         "w-full py-3 bg-primary text-background-dark rounded-xl text-sm font-black flex items-center justify-center gap-2 hover:shadow-[0_4px_20px_rgba(19,200,236,0.3)] transition-all active:scale-95 mb-2",
@@ -94,7 +95,7 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
                 >
                     <UserPlus className="size-6" />
                     {state === 'expanded' && <span className="animate-in fade-in slide-in-from-left-2 duration-300">Invite Member</span>}
-                </button>
+                </Link>
                 
                 <SidebarMenu className={cn('gap-1 border-t border-white/5 pt-4', isCollapsed && 'items-center')}>
                     {bottomItems.map((item) => (
