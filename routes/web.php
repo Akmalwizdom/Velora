@@ -21,11 +21,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.check-out');
     Route::get('performance', [PerformanceController::class, 'index'])->name('performance');
 
-    // HR, Manager, Admin only
-    Route::middleware('role:hr,manager,admin')->group(function () {
+    // Manager and Admin: Team analytics & dashboard (read access)
+    Route::middleware('role:manager,admin')->group(function () {
         Route::get('dashboard', [TeamAnalyticsController::class, 'index'])->name('dashboard');
         Route::get('team-analytics', [TeamAnalyticsController::class, 'index'])->name('team-analytics');
         Route::get('log-management', [CorrectionController::class, 'index'])->name('log-management');
+    });
+
+    // Manager only: Operational actions (separation of duties - Admin cannot approve)
+    Route::middleware('role:manager')->group(function () {
         Route::post('corrections/{correction}/approve', [CorrectionController::class, 'approve'])->name('corrections.approve');
         Route::post('corrections/{correction}/reject', [CorrectionController::class, 'reject'])->name('corrections.reject');
     });

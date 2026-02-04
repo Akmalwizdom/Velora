@@ -86,11 +86,6 @@ class User extends Authenticatable
         return $this->role?->name === Role::EMPLOYEE;
     }
 
-    public function isHr(): bool
-    {
-        return $this->role?->name === Role::HR;
-    }
-
     public function isManager(): bool
     {
         return $this->role?->name === Role::MANAGER;
@@ -103,12 +98,15 @@ class User extends Authenticatable
 
     public function canViewTeamAnalytics(): bool
     {
-        return in_array($this->role?->name, [Role::HR, Role::MANAGER, Role::ADMIN]);
+        return in_array($this->role?->name, [Role::MANAGER, Role::ADMIN]);
     }
 
+    /**
+     * Only managers can approve corrections (not admins - separation of duties).
+     */
     public function canApproveCorrections(): bool
     {
-        return in_array($this->role?->name, [Role::HR, Role::MANAGER, Role::ADMIN]);
+        return $this->role?->name === Role::MANAGER;
     }
 
     // Attendance Helpers

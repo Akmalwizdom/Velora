@@ -25,7 +25,7 @@ class AttendanceController extends Controller
             'sessionActive' => $this->attendanceService->isSessionActive($user),
             'todayStatus' => $this->attendanceService->getTodayStatus($user),
             'weeklyProgress' => $this->attendanceService->getWeeklyProgress($user),
-            'activeTeamMembers' => $this->attendanceService->getActiveTeamMembers(),
+            'activeTeamMembers' => $this->attendanceService->getActiveTeamMembers($user),
             'performanceData' => $this->attendanceService->getPerformanceData($user),
         ]);
     }

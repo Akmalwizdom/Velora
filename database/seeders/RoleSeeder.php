@@ -11,7 +11,6 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             ['name' => Role::EMPLOYEE, 'display_name' => 'Employee'],
-            ['name' => Role::HR, 'display_name' => 'Human Resources'],
             ['name' => Role::MANAGER, 'display_name' => 'Manager'],
             ['name' => Role::ADMIN, 'display_name' => 'Administrator'],
         ];

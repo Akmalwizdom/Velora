@@ -9,14 +9,27 @@ use Illuminate\Support\Collection;
 class CorrectionService
 {
     /**
-     * Get pending corrections for review.
+     * Get pending corrections for review, scoped by user role and team.
      */
-    public function getPendingCorrections(): Collection
+    public function getPendingCorrections(User $user): Collection
     {
-        return AttendanceCorrection::pending()
-            ->with(['attendance.user', 'requester'])
-            ->latest()
-            ->get();
+        $query = AttendanceCorrection::pending()
+            ->with(['attendance.user', 'requester']);
+
+        if ($user->isAdmin()) {
+            // Admin sees everything
+            return $query->latest()->get();
+        }
+
+        if ($user->isManager()) {
+            // Manager sees corrections from their teams
+            return $query->whereHas('requester.teams', function ($q) use ($user) {
+                $q->whereIn('teams.id', $user->teams->pluck('id'));
+            })->latest()->get();
+        }
+
+        // Employee sees only their own
+        return $query->where('requested_by', $user->id)->latest()->get();
     }
 
     /**
@@ -52,14 +65,25 @@ class CorrectionService
     }
 
     /**
-     * Get the latest pending correction for display.
+     * Get the latest pending correction for display, scoped by user.
      */
-    public function getCurrentCorrection(): ?array
+    public function getCurrentCorrection(User $user): ?array
     {
-        $correction = AttendanceCorrection::pending()
+        $query = AttendanceCorrection::pending()
             ->with(['attendance.user', 'requester'])
-            ->latest()
-            ->first();
+            ->latest();
+
+        if (!$user->isAdmin()) {
+            if ($user->isManager()) {
+                $query->whereHas('requester.teams', function ($q) use ($user) {
+                    $q->whereIn('teams.id', $user->teams->pluck('id'));
+                });
+            } else {
+                $query->where('requested_by', $user->id);
+            }
+        }
+
+        $correction = $query->first();
 
         if (! $correction) {
             return null;

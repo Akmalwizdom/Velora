@@ -26,11 +26,23 @@ class AttendanceCorrectionPolicy
 
     /**
      * Determine whether the user can approve/reject the correction.
+     * 
+     * Security guardrails:
+     * - Only Managers can approve (Admin excluded - separation of duties)
+     * - Self-approval is prevented
+     * - Cross-team isolation: Manager must share a team with the requester
      */
     public function approve(User $user, AttendanceCorrection $correction): bool
     {
-        // Only HR, Manager, Admin can approve corrections
-        // Users cannot approve their own corrections
-        return $user->canApproveCorrections() && $user->id !== $correction->requested_by;
+        if (!$user->canApproveCorrections() || $user->id === $correction->requested_by) {
+            return false;
+        }
+
+        // Manager must share at least one team with the requester
+        return $user->teams()
+            ->whereHas('members', function ($query) use ($correction) {
+                $query->where('users.id', $correction->requested_by);
+            })
+            ->exists();
     }
 }

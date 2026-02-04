@@ -126,16 +126,21 @@ class AttendanceService
     }
 
     /**
-     * Get active team members.
+     * Get active team members, scoped by user's teams.
      */
-    public function getActiveTeamMembers(): array
+    public function getActiveTeamMembers(User $user): array
     {
-        $activeUsers = User::whereHas('attendances', function ($query) {
+        $query = User::whereHas('attendances', function ($query) {
             $query->today()->active();
-        })
-            ->with('role')
-            ->limit(5)
-            ->get();
+        })->with('role');
+
+        // Scope to user's teams to prevent cross-team data leaks
+        $teamIds = $user->teams->pluck('id');
+        $query->whereHas('teams', function ($q) use ($teamIds) {
+            $q->whereIn('teams.id', $teamIds);
+        });
+
+        $activeUsers = $query->limit(5)->get();
 
         $members = $activeUsers->map(fn (User $user) => [
             'id' => $user->id,
@@ -143,8 +148,14 @@ class AttendanceService
             'avatar' => 'https://i.pravatar.cc/150?u='.$user->id,
         ])->toArray();
 
-        $totalActive = Attendance::today()->active()->count();
-        $remainingCount = max(0, $totalActive - 4);
+        $totalActive = Attendance::today()
+            ->active()
+            ->whereHas('user.teams', function ($q) use ($teamIds) {
+                $q->whereIn('teams.id', $teamIds);
+            })
+            ->count();
+
+        $remainingCount = max(0, $totalActive - count($members));
 
         return [
             'members' => $members,

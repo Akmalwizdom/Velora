@@ -25,7 +25,6 @@ class Role extends Model
     // Constants for role names
 
     public const EMPLOYEE = 'employee';
-    public const HR = 'hr';
     public const MANAGER = 'manager';
     public const ADMIN = 'admin';
 

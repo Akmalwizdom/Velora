@@ -9,51 +9,64 @@ use Illuminate\Support\Collection;
 class TeamAnalyticsService
 {
     /**
-     * Get presence percentage for today.
+     * Get presence percentage for today, scoped by user.
      */
-    public function getPresencePercentage(): float
+    public function getPresencePercentage(User $user): float
     {
-        $totalUsers = User::count();
+        $usersQuery = $this->getScopedUsersQuery($user);
+        $totalUsers = $usersQuery->count();
 
         if ($totalUsers === 0) {
             return 0;
         }
 
-        $checkedIn = Attendance::today()->distinct('user_id')->count('user_id');
+        $checkedIn = $this->getScopedAttendanceQuery($user)
+            ->today()
+            ->distinct('user_id')
+            ->count('user_id');
 
         return round(($checkedIn / $totalUsers) * 100);
     }
 
     /**
-     * Get count of currently active users.
+     * Get count of currently active users, scoped by user.
      */
-    public function getActiveCount(): int
+    public function getActiveCount(User $user): int
     {
-        return Attendance::today()->active()->count();
+        return $this->getScopedAttendanceQuery($user)
+            ->today()
+            ->active()
+            ->count();
     }
 
     /**
-     * Get count of remote workers today.
+     * Get count of remote workers today, scoped by user.
      */
-    public function getRemoteCount(): int
+    public function getRemoteCount(User $user): int
     {
-        return Attendance::today()
+        return $this->getScopedAttendanceQuery($user)
+            ->today()
             ->where('work_mode', 'remote')
             ->count();
     }
 
     /**
-     * Get count of late/absent users today.
+     * Get count of late/absent users today, scoped by user.
      */
-    public function getLateAbsentCount(): int
+    public function getLateAbsentCount(User $user): int
     {
-        $lateCount = Attendance::today()
+        $lateCount = $this->getScopedAttendanceQuery($user)
+            ->today()
             ->where('status', 'late')
             ->count();
 
         // Users who haven't checked in by now (after 9:15 AM) are considered absent
-        $totalUsers = User::count();
-        $checkedIn = Attendance::today()->distinct('user_id')->count('user_id');
+        $totalUsers = $this->getScopedUsersQuery($user)->count();
+        $checkedIn = $this->getScopedAttendanceQuery($user)
+            ->today()
+            ->distinct('user_id')
+            ->count('user_id');
+        
         $absentCount = max(0, $totalUsers - $checkedIn);
 
         // Only count absences after work hours start
@@ -65,11 +78,12 @@ class TeamAnalyticsService
     }
 
     /**
-     * Get late members for today.
+     * Get late members for today, scoped by user.
      */
-    public function getLateMembers(): Collection
+    public function getLateMembers(User $user): Collection
     {
-        return Attendance::today()
+        return $this->getScopedAttendanceQuery($user)
+            ->today()
             ->where('status', 'late')
             ->with('user')
             ->get()
@@ -86,11 +100,12 @@ class TeamAnalyticsService
     }
 
     /**
-     * Get remote members for today.
+     * Get remote members for today, scoped by user.
      */
-    public function getRemoteMembers(): Collection
+    public function getRemoteMembers(User $user): Collection
     {
-        return Attendance::today()
+        return $this->getScopedAttendanceQuery($user)
+            ->today()
             ->where('work_mode', 'remote')
             ->with('user')
             ->limit(5)
@@ -105,14 +120,17 @@ class TeamAnalyticsService
     }
 
     /**
-     * Get pulse feed items.
+     * Get pulse feed items, scoped by user.
      */
-    public function getPulseFeed(): array
+    public function getPulseFeed(User $user): array
     {
         $items = [];
 
         // Check for collaboration dip (simplified logic)
-        $remotePercentage = $this->getRemoteCount() / max(1, $this->getActiveCount()) * 100;
+        $remoteCount = $this->getRemoteCount($user);
+        $activeCount = $this->getActiveCount($user);
+        $remotePercentage = $activeCount > 0 ? ($remoteCount / $activeCount * 100) : 0;
+        
         if ($remotePercentage > 50) {
             $items[] = [
                 'type' => 'warning',
@@ -123,8 +141,7 @@ class TeamAnalyticsService
         }
 
         // Peak productivity (if many users active)
-        $activeCount = $this->getActiveCount();
-        $presencePercentage = $this->getPresencePercentage();
+        $presencePercentage = $this->getPresencePercentage($user);
         if ($presencePercentage >= 80) {
             $items[] = [
                 'type' => 'peak',
@@ -135,7 +152,8 @@ class TeamAnalyticsService
         }
 
         // Recent handoffs (simplified)
-        $recentCheckouts = Attendance::today()
+        $recentCheckouts = $this->getScopedAttendanceQuery($user)
+            ->today()
             ->whereNotNull('checked_out_at')
             ->count();
 
@@ -153,21 +171,48 @@ class TeamAnalyticsService
     /**
      * Get energy flux data (hourly distribution).
      */
-    public function getEnergyFlux(): array
+    public function getEnergyFlux(User $user): array
     {
         // Simplified: return mock pattern based on time of day
-        $currentHour = (int) now()->format('H');
+        // Scoping not strictly applied to mock data generation but method signature updated for consistency
         $flux = [];
 
         for ($h = 8; $h <= 20; $h += 1.5) {
             $hour = (int) $h;
-            // Peak around 10-11 AM and 2-3 PM
             $isPeak = in_array($hour, [10, 11, 14, 15]);
             $base = $isPeak ? random_int(70, 90) : random_int(20, 60);
             $flux[] = $base;
         }
 
         return array_slice($flux, 0, 8);
+    }
+
+    /**
+     * Helper to get scoped user query.
+     */
+    private function getScopedUsersQuery(User $user)
+    {
+        if ($user->isAdmin()) {
+            return User::query();
+        }
+
+        return User::whereHas('teams', function ($query) use ($user) {
+            $query->whereIn('teams.id', $user->teams->pluck('id'));
+        });
+    }
+
+    /**
+     * Helper to get scoped attendance query.
+     */
+    private function getScopedAttendanceQuery(User $user)
+    {
+        if ($user->isAdmin()) {
+            return Attendance::query();
+        }
+
+        return Attendance::whereHas('user.teams', function ($query) use ($user) {
+            $query->whereIn('teams.id', $user->teams->pluck('id'));
+        });
     }
 
     /**

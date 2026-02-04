@@ -19,7 +19,8 @@ class CorrectionController extends Controller
      */
     public function index(): Response
     {
-        $correction = $this->correctionService->getCurrentCorrection();
+        $user = auth()->user();
+        $correction = $this->correctionService->getCurrentCorrection($user);
         $auditLog = $correction
             ? $this->correctionService->getAuditLog($correction['id'])
             : [];
