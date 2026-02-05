@@ -18,6 +18,7 @@ const navItems = [
     { name: 'Attendance', icon: Zap, href: '/attendance-hub' },
     { name: 'Compliance', icon: Shield, href: '/log-management' },
     { name: 'Performance', icon: User, href: '/performance' },
+    { name: 'User Management', icon: Users, href: '/admin/users' },
 ];
 
 const bottomItems = [
@@ -84,18 +85,6 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
                         </div>
                     </div>
                 )}
-                
-                <Link 
-                    href="/admin/users"
-                    aria-label="Manage user registrations"
-                    className={cn(
-                        "w-full py-3 bg-primary text-background-dark rounded-xl text-sm font-black flex items-center justify-center gap-2 hover:shadow-[0_4px_20px_rgba(19,200,236,0.3)] transition-all active:scale-95 mb-2",
-                        isCollapsed && "size-12 p-0 rounded-full mx-auto"
-                    )}
-                >
-                    <Users className="size-6" />
-                    {state === 'expanded' && <span className="animate-in fade-in slide-in-from-left-2 duration-300">User Management</span>}
-                </Link>
                 
                 <SidebarMenu className={cn('gap-1 border-t border-white/5 pt-4', isCollapsed && 'items-center')}>
                     {bottomItems.map((item) => (
