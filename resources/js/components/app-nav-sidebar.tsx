@@ -81,7 +81,7 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
                         <p className="text-[10px] uppercase tracking-[0.2em] text-muted-dynamics mb-2 font-black">System Status</p>
                         <div className="flex items-center gap-2">
                             <div className="size-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(19,200,236,0.6)]"></div>
-                            <p className="text-xs text-white font-bold">Live Sync Active</p>
+                            <p className="text-xs text-white font-bold">Streaming Updates</p>
                         </div>
                     </div>
                 )}

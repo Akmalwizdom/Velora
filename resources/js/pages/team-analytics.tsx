@@ -66,11 +66,11 @@ export default function TeamAnalytics({
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
                         <StatCard label="Presence" value={`${stats.presence}%`} trend="+4.2%" trendColor="green" />
                         <StatCard label="Active Now" value={String(stats.activeNow)} subValue="Members" isPrimary />
-                        <StatCard label="Remote" value={String(stats.remote)} subValue="Labs" />
+                        <StatCard label="Remote" value={String(stats.remote)} subValue="Locations" />
                         <StatCard label="Late/Absent" value={String(stats.lateAbsent)} subValue="Today" trend="Action" trendColor="red" />
                     </div>
 
-                    {/* Attendance Snapshot - Immediate Operational Scanning */}
+                    {/* Attendance Snapshot - Workforce Overview */}
                     <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
                             <div className="flex justify-between items-center mb-6">
@@ -176,9 +176,9 @@ export default function TeamAnalytics({
                             />
                         )}
 
-                        {/* Energy Flux Chart */}
+                        {/* Activity Trends Chart */}
                         <div className="p-4 bg-white/5 border border-white/5 rounded-xl mt-auto">
-                            <p className="text-[10px] font-bold text-muted-dynamics uppercase tracking-widest mb-4 text-center">Energy Flux (24h)</p>
+                            <p className="text-[10px] font-bold text-muted-dynamics uppercase tracking-widest mb-4 text-center">Activity Trends (24h)</p>
                             <div className="flex items-end justify-between h-16 gap-1">
                                 {energyFlux.map((h, i) => (
                                     <div 
@@ -269,7 +269,7 @@ function MapNode({ top, left, right, name, status, img, count }: MapNodeProps) {
             {isAway && <p className="text-[9px] font-bold mt-1 text-muted-dynamics uppercase">Away</p>}
             {isCollab && (
                 <div className="mt-2">
-                    <span className="px-2 py-0.5 rounded-full bg-white/10 text-[9px] font-bold text-white uppercase tracking-tighter shadow-sm">Sync: API Refactor</span>
+                    <span className="px-2 py-0.5 rounded-full bg-white/10 text-[9px] font-bold text-white uppercase tracking-tighter shadow-sm">Working: API Refactor</span>
                 </div>
             )}
         </div>

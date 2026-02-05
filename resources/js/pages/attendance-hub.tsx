@@ -152,7 +152,7 @@ export default function AttendanceHub({
                     <div className="relative size-[280px] md:size-[410px] rounded-full flex flex-col items-center justify-center bg-background-dark/60 backdrop-blur-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                         <div className="flex flex-col items-center mb-4">
                             <Zap className="size-5 md:size-6 text-primary mb-2" />
-                            <p className="text-muted-dynamics text-[8px] md:text-[10px] font-bold tracking-[0.3em] uppercase">Pulse Alignment</p>
+                            <p className="text-muted-dynamics text-[8px] md:text-[10px] font-bold tracking-[0.3em] uppercase">Team Synchronization</p>
                         </div>
                         
                         {/* Main Timer Component */}
@@ -199,12 +199,12 @@ export default function AttendanceHub({
                             <div className="flex flex-col items-center gap-4 w-full max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="flex items-center gap-2 text-primary">
                                     <CheckCircle2 className="size-5" />
-                                    <span className="text-[10px] font-bold uppercase tracking-widest">Entry Captured</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Check-in Logged</span>
                                 </div>
                                 <input 
                                     autoFocus
                                     type="text" 
-                                    placeholder="Add context note (optional)..." 
+                                    placeholder="Add a note (optional)..." 
                                     value={checkOutForm.data.note}
                                     onChange={(e) => checkOutForm.setData('note', e.target.value)}
                                     onKeyDown={(e) => { if (e.key === 'Enter') handleNoteSubmit(); }}
@@ -278,7 +278,7 @@ export default function AttendanceHub({
                             </div>
                             <div className="flex flex-col">
                                 <p className="text-white text-xs font-bold leading-tight">Live Cluster</p>
-                                <p className="text-muted-dynamics text-[9px] md:text-[10px] uppercase font-bold tracking-tighter mt-0.5">{activeTeamMembers.totalActive} Currently Synced</p>
+                                <p className="text-muted-dynamics text-[9px] md:text-[10px] uppercase font-bold tracking-tighter mt-0.5">{activeTeamMembers.totalActive} Currently Active</p>
                             </div>
                         </div>
                     </HubStatCard>
@@ -335,7 +335,7 @@ export default function AttendanceHub({
 
                 {/* Decorative Elements */}
                 <div className="hidden lg:block absolute bottom-10 left-10 text-[10px] font-bold tracking-[0.4em] text-white/10 uppercase vertical-text origin-bottom-left rotate-180">
-                    Neural Engine Interface
+                    Velora Intelligence Interface
                 </div>
             </div>
         </DashboardLayout>
