@@ -8,6 +8,9 @@ use Illuminate\Support\Collection;
 
 class CorrectionService
 {
+    public function __construct(
+        protected AttendanceAuditService $auditService
+    ) {}
     /**
      * Get pending corrections for review, scoped by user role and team.
      */
@@ -144,6 +147,7 @@ class CorrectionService
 
     /**
      * Approve a correction.
+     * NON-NEGOTIABLE: Creates transparent audit trail with original/new values.
      */
     public function approve(AttendanceCorrection $correction, User $reviewer): void
     {
@@ -155,13 +159,24 @@ class CorrectionService
             'checked_in_at' => $correction->proposed_time,
             'status' => 'on_time', // Correction implies it was valid
         ]);
+
+        // Generate transparent audit trail (NON-NEGOTIABLE requirement)
+        $this->auditService->logCorrectionApproval($correction, $attendance, $reviewer);
     }
 
     /**
      * Reject a correction.
+     * Creates audit trail for traceability.
      */
     public function reject(AttendanceCorrection $correction, User $reviewer): void
     {
         $correction->reject($reviewer);
+
+        // Generate audit trail for rejection
+        $this->auditService->logCorrectionRejection(
+            $correction,
+            $correction->attendance,
+            $reviewer
+        );
     }
 }

@@ -32,23 +32,57 @@ class AttendanceController extends Controller
 
     /**
      * Check in the current user.
+     * Captures device type for audit purposes.
+     * Location signal is optional and organization-configurable.
      */
     public function checkIn(Request $request): RedirectResponse
     {
         $request->validate([
-            'work_mode' => 'nullable|in:office,remote',
+            'work_mode' => 'nullable|in:office,remote,hybrid,business_trip',
+            'location_lat' => 'nullable|numeric|between:-90,90',
+            'location_lng' => 'nullable|numeric|between:-180,180',
+            'location_accuracy' => 'nullable|string|max:20',
         ]);
+
+        // Device detection (lightweight, for audit support only)
+        $deviceType = $this->detectDeviceType($request);
+
+        // Optional location signal (check-in moment ONLY, respects org settings)
+        $locationSignal = null;
+        if ($request->has('location_lat') && $request->has('location_lng')) {
+            $locationSignal = [
+                'lat' => $request->input('location_lat'),
+                'lng' => $request->input('location_lng'),
+                'accuracy' => $request->input('location_accuracy', 'unknown'),
+            ];
+        }
 
         try {
             $this->attendanceService->checkIn(
                 $request->user(),
-                $request->input('work_mode', 'office')
+                $request->input('work_mode', 'office'),
+                null, // cluster
+                $deviceType,
+                $locationSignal
             );
 
             return back()->with('success', 'Successfully checked in!');
         } catch (\RuntimeException $e) {
             return back()->withErrors(['check_in' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Detect device type from user agent.
+     * Lightweight signal - not exposed prominently in UI.
+     */
+    private function detectDeviceType(Request $request): string
+    {
+        $userAgent = $request->userAgent() ?? '';
+        if (preg_match('/Mobile|Android|iPhone|iPad/i', $userAgent)) {
+            return 'mobile';
+        }
+        return 'web';
     }
 
     /**

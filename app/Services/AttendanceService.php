@@ -3,17 +3,28 @@
 namespace App\Services;
 
 use App\Models\Attendance;
+use App\Models\OrganizationSetting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AttendanceService
 {
+    public function __construct(
+        protected AttendanceAuditService $auditService
+    ) {}
+
     /**
-     * Check in a user.
+     * Check in a user with optional tracking signals.
+     * Timestamps are server-authoritative - never trust client time.
      */
-    public function checkIn(User $user, string $workMode = 'office', ?string $cluster = null): Attendance
-    {
+    public function checkIn(
+        User $user,
+        string $workMode = 'office',
+        ?string $cluster = null,
+        string $deviceType = 'web',
+        ?array $locationSignal = null
+    ): Attendance {
         // Check if already checked in today
         $existing = $user->todayAttendance;
 
@@ -21,20 +32,43 @@ class AttendanceService
             throw new \RuntimeException('Already checked in. Please check out first.');
         }
 
+        // Validate work mode against organization settings
+        $validModes = OrganizationSetting::getWorkModes();
+        if (!in_array($workMode, $validModes)) {
+            $workMode = 'office'; // Fallback to default
+        }
+
         $scheduledStart = Carbon::today()->setHour(9); // 09:00
-        $now = now();
+        $now = now(); // Server-authoritative timestamp
 
         $status = $now->gt($scheduledStart->addMinutes(15))
             ? 'late'
             : 'on_time';
 
-        return Attendance::create([
+        // Prepare location signal (only if organization allows)
+        $locationData = $this->prepareLocationSignal($locationSignal);
+
+        // Prepare device type (only if organization allows)
+        $capturedDeviceType = OrganizationSetting::isDeviceTypeCaptureEnabled()
+            ? $deviceType
+            : null;
+
+        $attendance = Attendance::create([
             'user_id' => $user->id,
-            'checked_in_at' => $now,
+            'checked_in_at' => $now, // Server-authoritative
             'work_mode' => $workMode,
             'cluster' => $cluster ?? $this->generateCluster(),
             'status' => $status,
+            'device_type' => $capturedDeviceType,
+            'location_lat' => $locationData['lat'],
+            'location_lng' => $locationData['lng'],
+            'location_accuracy' => $locationData['accuracy'],
         ]);
+
+        // Generate audit trail
+        $this->auditService->logCreation($attendance, $user, $deviceType);
+
+        return $attendance;
     }
 
     /**
@@ -48,12 +82,44 @@ class AttendanceService
             throw new \RuntimeException('No active session found. Please check in first.');
         }
 
+        $previousValues = $attendance->toArray();
+
         $attendance->update([
-            'checked_out_at' => now(),
+            'checked_out_at' => now(), // Server-authoritative
             'note' => $note,
         ]);
 
+        // Generate audit trail for check-out
+        $this->auditService->logUpdate(
+            $attendance,
+            $previousValues,
+            $user,
+            'user'
+        );
+
         return $attendance->fresh();
+    }
+
+    /**
+     * Prepare location signal respecting organization settings.
+     * Returns null values if location capture is disabled.
+     */
+    private function prepareLocationSignal(?array $locationSignal): array
+    {
+        // Check if organization allows location capture
+        if (!OrganizationSetting::isLocationCaptureEnabled()) {
+            return ['lat' => null, 'lng' => null, 'accuracy' => null];
+        }
+
+        if (!$locationSignal) {
+            return ['lat' => null, 'lng' => null, 'accuracy' => null];
+        }
+
+        return [
+            'lat' => $locationSignal['lat'] ?? null,
+            'lng' => $locationSignal['lng'] ?? null,
+            'accuracy' => $locationSignal['accuracy'] ?? 'unknown',
+        ];
     }
 
     /**

@@ -20,11 +20,17 @@ class Attendance extends Model
         'cluster',
         'note',
         'status',
+        'device_type',
+        'location_lat',
+        'location_lng',
+        'location_accuracy',
     ];
 
     protected $casts = [
         'checked_in_at' => 'datetime',
         'checked_out_at' => 'datetime',
+        'location_lat' => 'decimal:8',
+        'location_lng' => 'decimal:8',
     ];
 
     // Relationships
@@ -37,6 +43,11 @@ class Attendance extends Model
     public function corrections(): HasMany
     {
         return $this->hasMany(AttendanceCorrection::class);
+    }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AttendanceAuditLog::class);
     }
 
     // Scopes

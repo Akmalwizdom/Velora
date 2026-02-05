@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\CorrectionController;
+use App\Http\Controllers\InsightsController;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\TeamAnalyticsController;
 use App\Http\Controllers\UserManagementController;
@@ -26,6 +27,13 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::post('attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
     Route::post('attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.check-out');
     Route::get('performance', [PerformanceController::class, 'index'])->name('performance');
+
+    // Behavioral insights (observational, non-punitive)
+    Route::prefix('insights')->name('insights.')->group(function () {
+        Route::get('weekly-rhythm', [InsightsController::class, 'weeklyRhythm'])->name('weekly-rhythm');
+        Route::get('behavioral-signals', [InsightsController::class, 'behavioralSignals'])->name('behavioral-signals');
+        Route::post('refresh-snapshot', [InsightsController::class, 'refreshSnapshot'])->name('refresh-snapshot');
+    });
 
     // Manager and Admin: Team analytics & dashboard (read access)
     Route::middleware('role:manager,admin')->group(function () {
