@@ -13,11 +13,13 @@ import { request } from '@/routes/password';
 type Props = {
     status?: string;
     canResetPassword: boolean;
+    canRegister: boolean;
 };
 
 export default function Login({
     status,
     canResetPassword,
+    canRegister,
 }: Props) {
     return (
         <AuthLayout
@@ -94,6 +96,15 @@ export default function Login({
                                 Log in
                             </Button>
                         </div>
+
+                        {canRegister && (
+                            <div className="text-muted-foreground text-center text-sm">
+                                Don't have an account?{' '}
+                                <TextLink href="/register" tabIndex={6}>
+                                    Sign up
+                                </TextLink>
+                            </div>
+                        )}
                     </>
                 )}
             </Form>
@@ -106,3 +117,4 @@ export default function Login({
         </AuthLayout>
     );
 }
+

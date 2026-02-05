@@ -2,9 +2,9 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\CorrectionController;
-use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\TeamAnalyticsController;
+use App\Http\Controllers\UserManagementController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -15,9 +15,10 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-// Invitation acceptance (public routes - no auth required)
-Route::get('invitation/{token}', [InvitationController::class, 'showAccept'])->name('invitation.accept');
-Route::post('invitation/{token}', [InvitationController::class, 'accept'])->name('invitation.accept.store');
+// Pending approval page (authenticated but not active)
+Route::get('pending-approval', function () {
+    return Inertia::render('auth/pending-approval');
+})->middleware('auth')->name('pending-approval');
 
 Route::middleware(['auth', 'verified', 'active'])->group(function () {
     // All authenticated users
@@ -39,12 +40,11 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         Route::post('corrections/{correction}/reject', [CorrectionController::class, 'reject'])->name('corrections.reject');
     });
 
-    // Admin only: Invitation management
+    // Admin only: User management
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
-        Route::post('invitations', [InvitationController::class, 'store'])->name('invitations.store');
-        Route::post('invitations/{invitation}/resend', [InvitationController::class, 'resend'])->name('invitations.resend');
-        Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
+        Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
+        Route::post('users/{user}/approve', [UserManagementController::class, 'approve'])->name('users.approve');
+        Route::post('users/{user}/reject', [UserManagementController::class, 'reject'])->name('users.reject');
     });
 });
 

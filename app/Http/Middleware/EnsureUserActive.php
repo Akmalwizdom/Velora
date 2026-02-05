@@ -24,12 +24,10 @@ class EnsureUserActive
         }
 
         if ($user->isPending()) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            return redirect()->route('login')
-                ->with('error', 'Your account is pending activation. Please complete your invitation.');
+            // Redirect pending users to approval waiting page
+            if (!$request->routeIs('pending-approval') && !$request->routeIs('logout')) {
+                return redirect()->route('pending-approval');
+            }
         }
 
         if ($user->isSuspended()) {
