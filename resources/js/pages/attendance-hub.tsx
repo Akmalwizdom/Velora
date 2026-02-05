@@ -14,11 +14,20 @@ import {
     MapPin,
     Monitor,
     Square,
-    Loader2
+    Loader2,
+    Building2,
+    Home,
+    Laptop,
+    Briefcase
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import type { AttendanceHubProps } from '@/types/attendance';
+import { WeeklyRhythmPanel } from '@/components/ui/weekly-rhythm-panel';
+import { WorkModeSelector } from '@/components/ui/work-mode-selector';
+import { BehavioralInsightsPanel } from '@/components/ui/behavioral-insights-panel';
+
+type WorkMode = 'office' | 'remote' | 'hybrid' | 'business_trip';
 
 interface PageProps extends AttendanceHubProps {}
 
@@ -32,9 +41,11 @@ export default function AttendanceHub({
     const [sessionActive, setSessionActive] = useState(initialSessionActive);
     const [showNote, setShowNote] = useState(false);
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
+    const [selectedWorkMode, setSelectedWorkMode] = useState<WorkMode>(todayStatus.workMode as WorkMode || 'office');
+    const [showInsights, setShowInsights] = useState(false); // Toggle for insights panel
 
     // Forms for check-in/out
-    const checkInForm = useForm({ work_mode: 'office' as const });
+    const checkInForm = useForm({ work_mode: selectedWorkMode });
     const checkOutForm = useForm({ note: '' });
 
     // Timer effect
@@ -69,6 +80,7 @@ export default function AttendanceHub({
     const time = formatTime(elapsedSeconds);
 
     const handleStartSession = () => {
+        checkInForm.setData('work_mode', selectedWorkMode);
         checkInForm.post(route('attendance.check-in'), {
             preserveScroll: true,
             onSuccess: () => {
@@ -151,6 +163,17 @@ export default function AttendanceHub({
                             <span className="text-3xl md:text-5xl font-light text-white/20 leading-none mb-4">:</span>
                             <TimeBlock value={time.seconds} label="SEC" isPrimary />
                         </div>
+
+                        {/* Work Mode Selector - Pre-session */}
+                        {!sessionActive && !showNote && (
+                            <div className="mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <WorkModeSelector
+                                    value={selectedWorkMode}
+                                    onChange={(mode) => setSelectedWorkMode(mode)}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        )}
 
                         {/* Action Button */}
                         {!showNote ? (
@@ -283,6 +306,31 @@ export default function AttendanceHub({
                             </div>
                         </div>
                     </HubStatCard>
+                </div>
+
+                {/* Weekly Rhythm & Insights Section */}
+                <div className="w-full max-w-[1100px] mt-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase">
+                            Weekly Insights
+                        </span>
+                        <button
+                            onClick={() => setShowInsights(!showInsights)}
+                            className="text-[10px] font-bold text-muted-dynamics hover:text-primary transition-colors uppercase tracking-wide"
+                        >
+                            {showInsights ? 'Hide Details' : 'Show Details'}
+                        </button>
+                    </div>
+                    
+                    <div className={cn(
+                        'grid gap-6 transition-all duration-500',
+                        showInsights ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'
+                    )}>
+                        <WeeklyRhythmPanel className="w-full" />
+                        {showInsights && (
+                            <BehavioralInsightsPanel className="w-full animate-in fade-in slide-in-from-right-4 duration-300" />
+                        )}
+                    </div>
                 </div>
 
                 {/* Decorative Elements */}
