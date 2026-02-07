@@ -116,6 +116,29 @@ class TeamAnalyticsService
                 'time' => $a->cluster ?? 'Remote',
                 'avatar' => 'https://i.pravatar.cc/150?u='.$a->user->id,
                 'status' => 'remote',
+                'lat' => $a->location_lat,
+                'lng' => $a->location_lng,
+            ]);
+    }
+
+    /**
+     * Get all active members with their locations.
+     */
+    public function getActiveMembers(User $user): Collection
+    {
+        return $this->getScopedAttendanceQuery($user)
+            ->today()
+            ->active()
+            ->with('user')
+            ->get()
+            ->map(fn (Attendance $a) => [
+                'id' => $a->user->id,
+                'name' => $this->getShortName($a->user->name),
+                'avatar' => 'https://i.pravatar.cc/150?u='.$a->user->id,
+                'status' => $a->work_mode === 'remote' ? 'remote' : 'active',
+                'lat' => $a->location_lat,
+                'lng' => $a->location_lng,
+                'check_in' => $a->checked_in_at->format('H:i'),
             ]);
     }
 
@@ -173,18 +196,28 @@ class TeamAnalyticsService
      */
     public function getEnergyFlux(User $user): array
     {
-        // Simplified: return mock pattern based on time of day
-        // Scoping not strictly applied to mock data generation but method signature updated for consistency
         $flux = [];
+        $query = $this->getScopedAttendanceQuery($user)->today();
 
+        // Get count of check-ins per 1.5 hour slot (approximate)
         for ($h = 8; $h <= 20; $h += 1.5) {
-            $hour = (int) $h;
-            $isPeak = in_array($hour, [10, 11, 14, 15]);
-            $base = $isPeak ? random_int(70, 90) : random_int(20, 60);
-            $flux[] = $base;
+            $startHour = (int) $h;
+            $endHour = (int) ($h + 1.5);
+            
+            $count = (clone $query)
+                ->whereRaw('EXTRACT(HOUR FROM checked_in_at) >= ? AND EXTRACT(HOUR FROM checked_in_at) < ?', [$startHour, $endHour])
+                ->count();
+            
+            // Normalize for visual: 20 -> 100%
+            $flux[] = min(100, $count * 5); 
         }
 
-        return array_slice($flux, 0, 8);
+        // If no real data yet, provide a slight "morning peak" baseline instead of empty
+        if (array_sum($flux) === 0) {
+            return [20, 45, 80, 70, 40, 30, 15, 10];
+        }
+
+        return $flux;
     }
 
     /**

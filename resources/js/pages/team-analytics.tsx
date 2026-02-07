@@ -26,15 +26,48 @@ import {
 import React from 'react';
 import type { TeamAnalyticsProps, TeamMember, PulseFeedItem } from '@/types/attendance';
 
+interface ActiveMember extends TeamMember {
+    lat: string | number | null;
+    lng: string | number | null;
+    check_in: string;
+}
+
 interface PageProps extends TeamAnalyticsProps {}
 
 export default function TeamAnalytics({
     stats = { presence: 0, activeNow: 0, remote: 0, lateAbsent: 0 },
     lateMembers = [],
     remoteMembers = [],
+    activeMembers = [],
     pulseFeed = [],
-    energyFlux = [30, 45, 80, 60, 90, 40, 20, 50]
-}: PageProps) {
+    energyFlux = [30, 45, 80, 70, 40, 30, 15, 10]
+}: PageProps & { activeMembers?: ActiveMember[] }) {
+    // Helper to map lat/lng to map percentages
+    // Ideally we boundary this based on office locations, but for now we'll use a simple relative mapping
+    const getMapPosition = (lat: any, lng: any, index: number) => {
+        if (!lat || !lng) {
+            // If no coordinates, space them out pseudo-randomly for aesthetic "distributed" look
+            const seed = (index * 137) % 100;
+            return {
+                top: `${20 + (seed % 60)}%`,
+                left: `${10 + ((seed * 7) % 80)}%`
+            };
+        }
+        
+        // Simple mapping (example organizational boundary: Indonesia/Jakarta area)
+        // Lat: -6.1754, Lng: 106.8272
+        const baseLat = -6.1754;
+        const baseLng = 106.8272;
+        
+        // Scale factor to keep nodes within 10-90% range
+        const top = 50 - (parseFloat(lat) - baseLat) * 200;
+        const left = 50 + (parseFloat(lng) - baseLng) * 200;
+        
+        return {
+            top: `${Math.max(10, Math.min(90, top))}%`,
+            left: `${Math.max(10, Math.min(90, left))}%`
+        };
+    };
     return (
         <DashboardLayout title="Team Analytics">
             <div className="flex flex-col lg:flex-row h-full min-h-0 overflow-hidden">
@@ -44,7 +77,7 @@ export default function TeamAnalytics({
                     <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8">
                         <div>
                             <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-2">Team Presence Overview</h2>
-                            <p className="text-muted-dynamics text-base md:text-lg">Atmospheric real-time map of your distributed workspace.</p>
+                            <p className="text-muted-dynamics text-base md:text-lg">Real-time visualization of your active workforce.</p>
                         </div>
                         <div className="flex gap-3 w-full sm:w-auto">
                             <button 
@@ -107,11 +140,10 @@ export default function TeamAnalytics({
 
                     {/* Atmospheric Map Container */}
                     <div className="flex-1 min-h-[400px] md:min-h-[500px] relative rounded-2xl bg-[#0a1214] border border-white/5 overflow-hidden grid-bg">
-                        {/* Legend */}
+                        {/* Legend - Simplified to only Active/Remote */}
                         <div className="absolute top-4 left-4 md:top-6 md:left-6 flex flex-col gap-2 z-10">
-                            <LegendItem color="bg-primary" label="Deep Focus" active />
-                            <LegendItem color="bg-white/40" label="Collaborating" />
-                            <LegendItem color="bg-[#3b4f54]" label="Away" />
+                            <LegendItem color="bg-primary" label="Active Now" active />
+                            <LegendItem color="bg-white/10" label="Remote" />
                         </div>
 
                         {/* Map Visualization (CSS/SVG) */}
@@ -124,10 +156,27 @@ export default function TeamAnalytics({
                             </svg>
                         </div>
 
-                        {/* Interactive Nodes - Responsive Positioning (Simple Scale) */}
-                        <MapNode top="20%" left="15%" name="Sarah D." status="focus" img="https://i.pravatar.cc/150?u=sarah" />
-                        <MapNode top="55%" left="45%" status="collab" count={5} />
-                        <MapNode top="30%" right="20%" status="away" name="User" img="https://i.pravatar.cc/150?u=away" />
+                        {/* Interactive Nodes - Data Driven Presence */}
+                        {activeMembers.map((member, idx) => {
+                            const pos = getMapPosition(member.lat, member.lng, idx);
+                            return (
+                                <MapNode 
+                                    key={member.id}
+                                    top={pos.top} 
+                                    left={pos.left} 
+                                    name={member.name} 
+                                    status={member.status === 'remote' ? 'remote' : 'active'} 
+                                    img={member.avatar} 
+                                />
+                            );
+                        })}
+
+                        {/* If empty, show a subtle hint */}
+                        {activeMembers.length === 0 && (
+                            <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+                                <p className="text-xs text-muted-dynamics uppercase font-bold tracking-[0.2em]">Waiting for pulses...</p>
+                            </div>
+                        )}
 
                         {/* Time Travel Slider */}
                         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-xl px-4 md:px-10">
@@ -221,22 +270,21 @@ interface MapNodeProps {
     left?: string;
     right?: string;
     name?: string;
-    status: 'focus' | 'away' | 'collab';
+    status: 'active' | 'remote';
     img?: string;
     count?: number;
 }
 
 function MapNode({ top, left, right, name, status, img, count }: MapNodeProps) {
-    const isFocus = status === 'focus';
-    const isAway = status === 'away';
-    const isCollab = status === 'collab';
+    const isActive = status === 'active';
+    const isRemote = status === 'remote';
 
     return (
         <div 
             className="absolute flex flex-col items-center group cursor-pointer" 
             style={{ top, left, right }}
         >
-            {isCollab ? (
+            {count ? (
                 <div className="flex -space-x-4">
                     {[1, 2].map(i => (
                         <div key={i} className="size-10 md:size-12 rounded-full border-2 border-[#0a1214] bg-surface-dark overflow-hidden transition-transform group-hover:scale-110">
@@ -250,28 +298,23 @@ function MapNode({ top, left, right, name, status, img, count }: MapNodeProps) {
             ) : (
                 <div className={cn(
                     'relative transition-all duration-300 group-hover:scale-110',
-                    isAway ? 'opacity-40 grayscale hover:opacity-60 hover:grayscale-0' : 'opacity-100'
+                    isRemote ? 'opacity-80' : 'opacity-100'
                 )}>
                     <div className={cn(
                         'size-12 md:size-16 rounded-full border flex items-center justify-center p-1 bg-white/5',
-                        isFocus ? 'border-primary/40 bg-primary/10 orb-glow' : 'border-white/10'
+                        isActive ? 'border-primary/40 bg-primary/10 orb-glow' : 'border-white/10'
                     )}>
                         <img src={img} className="size-full rounded-full bg-cover" alt={name || "User"} />
                     </div>
-                    {isFocus && (
-                        <div className="absolute -bottom-1 -right-1 size-4 bg-primary rounded-full border-2 border-[#0a1214] flex items-center justify-center shadow-lg">
-                            <Zap className="text-background-dark size-2.5 fill-current" />
+                    {isRemote && (
+                        <div className="absolute -bottom-1 -right-1 size-4 bg-primary/20 rounded-full border-2 border-[#0a1214] flex items-center justify-center shadow-lg">
+                            <Zap className="text-primary size-2.5 fill-current" />
                         </div>
                     )}
                 </div>
             )}
-            {name && <p className={cn('text-[10px] font-bold mt-2 uppercase tracking-tight', isFocus ? 'text-primary' : 'text-muted-dynamics')}>{name}</p>}
-            {isAway && <p className="text-[9px] font-bold mt-1 text-muted-dynamics uppercase">Away</p>}
-            {isCollab && (
-                <div className="mt-2">
-                    <span className="px-2 py-0.5 rounded-full bg-white/10 text-[9px] font-bold text-white uppercase tracking-tighter shadow-sm">Working: API Refactor</span>
-                </div>
-            )}
+            {name && <p className={cn('text-[10px] font-bold mt-2 uppercase tracking-tight', isActive ? 'text-primary' : 'text-muted-dynamics')}>{name}</p>}
+            {isRemote && <p className="text-[9px] font-bold mt-1 text-muted-dynamics uppercase">Remote</p>}
         </div>
     );
 }

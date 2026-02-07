@@ -92,8 +92,13 @@ class User extends Authenticatable
 
     public function todayAttendance(): HasOne
     {
+        // Define "today's attendance" as either an active session (regardless of date)
+        // or the latest record from the current UTC day.
         return $this->hasOne(Attendance::class)
-            ->whereDate('checked_in_at', today())
+            ->where(function ($query) {
+                $query->whereDate('checked_in_at', today())
+                    ->orWhereNull('checked_out_at');
+            })
             ->latest('checked_in_at');
     }
 

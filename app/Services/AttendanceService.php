@@ -144,7 +144,7 @@ class AttendanceService
 
         return [
             'status' => $attendance?->status ?? 'not_checked_in',
-            'checkedInAt' => $attendance?->checked_in_at?->format('H:i'),
+            'checkedInAt' => $attendance?->checked_in_at?->toIso8601String(),
             'schedule' => $schedule 
                 ? "{$schedule->formatted_start_time} - {$schedule->formatted_end_time}"
                 : '09:00 - 18:00',

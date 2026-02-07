@@ -28,6 +28,7 @@ class TeamAnalyticsController extends Controller
             ],
             'lateMembers' => $this->teamAnalyticsService->getLateMembers($user),
             'remoteMembers' => $this->teamAnalyticsService->getRemoteMembers($user),
+            'activeMembers' => $this->teamAnalyticsService->getActiveMembers($user),
             'pulseFeed' => $this->teamAnalyticsService->getPulseFeed($user),
             'energyFlux' => $this->teamAnalyticsService->getEnergyFlux($user),
         ]);

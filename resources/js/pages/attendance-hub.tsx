@@ -53,10 +53,8 @@ export default function AttendanceHub({
     useEffect(() => {
         if (!sessionActive || !todayStatus.checkedInAt) return;
         
-        // Calculate initial elapsed from check-in time
-        const [hours, mins] = todayStatus.checkedInAt.split(':').map(Number);
-        const checkedInDate = new Date();
-        checkedInDate.setHours(hours, mins, 0, 0);
+        // Calculate initial elapsed from full ISO timestamp
+        const checkedInDate = new Date(todayStatus.checkedInAt);
         const initialElapsed = Math.floor((Date.now() - checkedInDate.getTime()) / 1000);
         setElapsedSeconds(Math.max(0, initialElapsed));
 
@@ -227,6 +225,9 @@ export default function AttendanceHub({
                     <div className="flex flex-col items-center gap-1">
                         <span className="text-[9px] font-bold text-muted-dynamics/40 uppercase tracking-widest">Today</span>
                         <span className="text-xs font-black text-white uppercase">{todayStatus.status === 'on_time' ? 'On Time' : todayStatus.status === 'late' ? 'Late' : 'Not Checked In'}</span>
+                        {todayStatus.checkedInAt && (
+                            <span className="text-[8px] text-primary/60 font-medium">@ {new Date(todayStatus.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        )}
                     </div>
                     <div className="h-4 w-px bg-white/10" />
                     <div className="flex flex-col items-center gap-1">
