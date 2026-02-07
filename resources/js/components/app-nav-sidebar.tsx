@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/react';
-import { HelpCircle, LayoutGrid, Settings, Shield, User, Zap, Users } from 'lucide-react';
+import { HelpCircle, LayoutGrid, Settings, Shield, User, Zap, Users, Clock } from 'lucide-react';
 import React from 'react';
 import {
     Sidebar,
@@ -19,6 +19,7 @@ const navItems = [
     { name: 'Compliance', icon: Shield, href: '/log-management' },
     { name: 'Performance', icon: User, href: '/performance' },
     { name: 'User Management', icon: Users, href: '/admin/users' },
+    { name: 'Work Schedules', icon: Clock, href: '/admin/work-schedules' },
 ];
 
 const bottomItems = [

@@ -38,12 +38,16 @@ class AttendanceService
             $workMode = 'office'; // Fallback to default
         }
 
-        $scheduledStart = Carbon::today()->setHour(9); // 09:00
-        $now = now(); // Server-authoritative timestamp
+        $schedule = $user->currentWorkSchedule();
+        $now = now();
 
-        $status = $now->gt($scheduledStart->addMinutes(15))
-            ? 'late'
-            : 'on_time';
+        if ($schedule) {
+            $status = $schedule->isLate($now) ? 'late' : 'on_time';
+        } else {
+            // Fallback to legacy default if no schedule found (failsafe)
+            $scheduledStart = Carbon::today()->setHour(9);
+            $status = $now->gt($scheduledStart->addMinutes(15)) ? 'late' : 'on_time';
+        }
 
         // Prepare location signal (only if organization allows)
         $locationData = $this->prepareLocationSignal($locationSignal);
@@ -136,11 +140,14 @@ class AttendanceService
     public function getTodayStatus(User $user): array
     {
         $attendance = $user->todayAttendance;
+        $schedule = $user->currentWorkSchedule();
 
         return [
             'status' => $attendance?->status ?? 'not_checked_in',
             'checkedInAt' => $attendance?->checked_in_at?->format('H:i'),
-            'schedule' => '09:00 - 18:00',
+            'schedule' => $schedule 
+                ? "{$schedule->formatted_start_time} - {$schedule->formatted_end_time}"
+                : '09:00 - 18:00',
             'cluster' => $attendance?->cluster ?? 'N/A',
             'workMode' => $attendance?->work_mode ?? 'office',
         ];

@@ -6,6 +6,7 @@ use App\Http\Controllers\InsightsController;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\TeamAnalyticsController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -53,6 +54,13 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
         Route::post('users/{user}/approve', [UserManagementController::class, 'approve'])->name('users.approve');
         Route::post('users/{user}/reject', [UserManagementController::class, 'reject'])->name('users.reject');
+
+        // Work Schedule Management
+        Route::get('work-schedules', [WorkScheduleController::class, 'index'])->name('work-schedules.index');
+        Route::post('work-schedules', [WorkScheduleController::class, 'store'])->name('work-schedules.store');
+        Route::put('work-schedules/{work_schedule}', [WorkScheduleController::class, 'update'])->name('work-schedules.update');
+        Route::delete('work-schedules/{work_schedule}', [WorkScheduleController::class, 'destroy'])->name('work-schedules.destroy');
+        Route::post('work-schedules/{work_schedule}/assign', [WorkScheduleController::class, 'assign'])->name('work-schedules.assign');
     });
 });
 

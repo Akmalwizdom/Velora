@@ -26,6 +26,7 @@ import type { AttendanceHubProps } from '@/types/attendance';
 import { WeeklyRhythmPanel } from '@/components/ui/weekly-rhythm-panel';
 import { WorkModeSelector } from '@/components/ui/work-mode-selector';
 import { BehavioralInsightsPanel } from '@/components/ui/behavioral-insights-panel';
+import { checkIn, checkOut } from '@/routes/attendance';
 
 type WorkMode = 'office' | 'remote' | 'hybrid' | 'business_trip';
 
@@ -81,7 +82,7 @@ export default function AttendanceHub({
 
     const handleStartSession = () => {
         checkInForm.setData('work_mode', selectedWorkMode);
-        checkInForm.post(route('attendance.check-in'), {
+        checkInForm.post(checkIn.url(), {
             preserveScroll: true,
             onSuccess: () => {
                 setSessionActive(true);
@@ -91,7 +92,7 @@ export default function AttendanceHub({
     };
 
     const handleEndSession = () => {
-        checkOutForm.post(route('attendance.check-out'), {
+        checkOutForm.post(checkOut.url(), {
             preserveScroll: true,
             onSuccess: () => {
                 setSessionActive(false);
@@ -121,11 +122,11 @@ export default function AttendanceHub({
                 <div className="absolute top-6 md:top-10 right-6 md:right-10 flex items-center gap-4">
                     <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/5">
                         <Monitor className="size-3.5 text-primary" />
-                        <span className="text-[10px] font-bold tracking-widest text-muted-dynamics uppercase">Work Mode: {todayStatus.workMode === 'remote' ? 'Remote' : 'Office'}</span>
+                        <span className="text-[10px] font-bold tracking-widest text-muted-dynamics uppercase">Location: {todayStatus.workMode === 'remote' ? 'Remote' : 'Office'}</span>
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
                         <div className={cn('size-1.5 rounded-full animate-pulse shadow-[0_0_8px_rgba(19,200,236,0.5)]', sessionActive ? 'bg-primary' : 'bg-slate-500')}></div>
-                        <span className="text-[10px] font-bold tracking-widest text-muted-dynamics uppercase">{sessionActive ? 'Session Active' : 'System Ready'}</span>
+                        <span className="text-[10px] font-bold tracking-widest text-muted-dynamics uppercase">{sessionActive ? 'Checked In' : 'Ready to Check In'}</span>
                     </div>
                 </div>
 
@@ -152,7 +153,7 @@ export default function AttendanceHub({
                     <div className="relative size-[280px] md:size-[410px] rounded-full flex flex-col items-center justify-center bg-background-dark/60 backdrop-blur-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                         <div className="flex flex-col items-center mb-4">
                             <Zap className="size-5 md:size-6 text-primary mb-2" />
-                            <p className="text-muted-dynamics text-[8px] md:text-[10px] font-bold tracking-[0.3em] uppercase">Team Synchronization</p>
+                            <p className="text-muted-dynamics text-[8px] md:text-[10px] font-bold tracking-[0.3em] uppercase">Work Hours</p>
                         </div>
                         
                         {/* Main Timer Component */}
@@ -193,13 +194,13 @@ export default function AttendanceHub({
                                 ) : (
                                     <Play className="size-4 fill-current relative z-10" />
                                 )}
-                                <span className="relative z-10">{isLoading ? 'Processing...' : sessionActive ? 'End Session' : 'Start Session'}</span>
+                                <span className="relative z-10">{isLoading ? 'Processing...' : sessionActive ? 'Check Out' : 'Check In'}</span>
                             </button>
                         ) : (
                             <div className="flex flex-col items-center gap-4 w-full max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="flex items-center gap-2 text-primary">
                                     <CheckCircle2 className="size-5" />
-                                    <span className="text-[10px] font-bold uppercase tracking-widest">Check-in Logged</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Checked In Successfully</span>
                                 </div>
                                 <input 
                                     autoFocus
@@ -214,7 +215,7 @@ export default function AttendanceHub({
                                     onClick={handleNoteSubmit}
                                     className="text-[10px] font-black text-muted-dynamics/40 hover:text-white uppercase tracking-widest transition-colors"
                                 >
-                                    Skip to Dashboard
+                                    Continue
                                 </button>
                             </div>
                         )}
@@ -277,8 +278,8 @@ export default function AttendanceHub({
                                 )}
                             </div>
                             <div className="flex flex-col">
-                                <p className="text-white text-xs font-bold leading-tight">Live Cluster</p>
-                                <p className="text-muted-dynamics text-[9px] md:text-[10px] uppercase font-bold tracking-tighter mt-0.5">{activeTeamMembers.totalActive} Currently Active</p>
+                                <p className="text-white text-xs font-bold leading-tight">Team Online</p>
+                                <p className="text-muted-dynamics text-[9px] md:text-[10px] uppercase font-bold tracking-tighter mt-0.5">{activeTeamMembers.totalActive} Working Now</p>
                             </div>
                         </div>
                     </HubStatCard>

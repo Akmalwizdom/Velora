@@ -21,6 +21,16 @@ class Team extends Model
         return $this->belongsToMany(User::class);
     }
 
+    /**
+     * Schedules assigned to this team.
+     */
+    public function workSchedules(): BelongsToMany
+    {
+        return $this->belongsToMany(WorkSchedule::class, 'team_work_schedules')
+            ->withPivot(['effective_from', 'effective_until'])
+            ->withTimestamps();
+    }
+
     // Helpers
 
     public function getMemberCount(): int

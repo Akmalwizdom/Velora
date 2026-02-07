@@ -107,6 +107,53 @@ class User extends Authenticatable
         return $this->hasOne(Invitation::class, 'email', 'email');
     }
 
+    /**
+     * Individual schedule overrides.
+     */
+    public function workSchedules(): BelongsToMany
+    {
+        return $this->belongsToMany(WorkSchedule::class, 'user_work_schedules')
+            ->withPivot(['effective_from', 'effective_until', 'is_override'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Resolve the current work schedule based on hierarchy:
+     * 1. Individual Override
+     * 2. Team Schedule
+     * 3. Global Default
+     */
+    public function currentWorkSchedule(): ?WorkSchedule
+    {
+        // 1. Resolve Individual Override
+        $override = $this->workSchedules()
+            ->where('is_override', true)
+            ->where('effective_from', '<=', today())
+            ->where(function ($q) {
+                $q->whereNull('effective_until')
+                  ->orWhere('effective_until', '>=', today());
+            })
+            ->first();
+
+        if ($override) return $override;
+
+        // 2. Resolve Team Schedule
+        foreach ($this->teams as $team) {
+            $teamSchedule = $team->workSchedules()
+                ->where('effective_from', '<=', today())
+                ->where(function ($q) {
+                    $q->whereNull('effective_until')
+                      ->orWhere('effective_until', '>=', today());
+                })
+                ->first();
+            
+            if ($teamSchedule) return $teamSchedule;
+        }
+
+        // 3. Resolve Global Default
+        return WorkSchedule::active()->default()->first();
+    }
+
     // Status Helpers
 
     public function isActive(): bool
