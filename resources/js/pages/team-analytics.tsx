@@ -29,6 +29,7 @@ import type { TeamAnalyticsProps, TeamMember, PulseFeedItem } from '@/types/atte
 interface ActiveMember extends TeamMember {
     lat: string | number | null;
     lng: string | number | null;
+    location_name?: string;
     check_in: string;
 }
 
@@ -58,14 +59,18 @@ export default function TeamAnalytics({
         // Lat: -6.1754, Lng: 106.8272
         const baseLat = -6.1754;
         const baseLng = 106.8272;
+
+        // Anti-overlapping offset: add a small jitter based on index
+        const jitterX = (index % 3 - 1) * 2; // -2, 0, or 2
+        const jitterY = (Math.floor(index / 3) % 3 - 1) * 2;
         
         // Scale factor to keep nodes within 10-90% range
         const top = 50 - (parseFloat(lat) - baseLat) * 200;
         const left = 50 + (parseFloat(lng) - baseLng) * 200;
         
         return {
-            top: `${Math.max(10, Math.min(90, top))}%`,
-            left: `${Math.max(10, Math.min(90, left))}%`
+            top: `${Math.max(10, Math.min(90, top + jitterY))}%`,
+            left: `${Math.max(10, Math.min(90, left + jitterX))}%`
         };
     };
     return (
@@ -153,6 +158,11 @@ export default function TeamAnalytics({
                                 <circle cx="150" cy="150" fill="#13c8ec" r="2" />
                                 <circle cx="400" cy="300" fill="#13c8ec" r="2" />
                                 <circle cx="650" cy="120" fill="#13c8ec" r="2" />
+                                
+                                {/* Region Context Labels */}
+                                <text x="150" y="130" fill="white" fontSize="10" fontWeight="bold" opacity="0.4" textAnchor="middle">WEST REGION</text>
+                                <text x="400" y="280" fill="white" fontSize="10" fontWeight="bold" opacity="0.4" textAnchor="middle">CENTRAL HUB</text>
+                                <text x="650" y="100" fill="white" fontSize="10" fontWeight="bold" opacity="0.4" textAnchor="middle">EAST SECTOR</text>
                             </svg>
                         </div>
 
@@ -165,6 +175,7 @@ export default function TeamAnalytics({
                                     top={pos.top} 
                                     left={pos.left} 
                                     name={member.name} 
+                                    location={member.location_name}
                                     status={member.status === 'remote' ? 'remote' : 'active'} 
                                     img={member.avatar} 
                                 />
@@ -270,6 +281,7 @@ interface MapNodeProps {
     left?: string;
     right?: string;
     name?: string;
+    location?: string;
     status: 'active' | 'remote';
     img?: string;
     count?: number;
@@ -313,8 +325,9 @@ function MapNode({ top, left, right, name, status, img, count }: MapNodeProps) {
                     )}
                 </div>
             )}
-            {name && <p className={cn('text-[10px] font-bold mt-2 uppercase tracking-tight', isActive ? 'text-primary' : 'text-muted-dynamics')}>{name}</p>}
-            {isRemote && <p className="text-[9px] font-bold mt-1 text-muted-dynamics uppercase">Remote</p>}
+            {name && <p className={cn('text-[10px] font-black mt-2 uppercase tracking-tight', isActive ? 'text-primary' : 'text-muted-dynamics')}>{name}</p>}
+            {location && <p className="text-[8px] font-bold text-muted-dynamics/50 uppercase tracking-tighter">{location}</p>}
+            {isRemote && !location && <p className="text-[9px] font-bold mt-1 text-muted-dynamics uppercase">Remote</p>}
         </div>
     );
 }

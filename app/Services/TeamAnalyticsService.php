@@ -118,6 +118,7 @@ class TeamAnalyticsService
                 'status' => 'remote',
                 'lat' => $a->location_lat,
                 'lng' => $a->location_lng,
+                'location_name' => $this->resolveLocationName($a->location_lat, $a->location_lng),
             ]);
     }
 
@@ -138,6 +139,7 @@ class TeamAnalyticsService
                 'status' => $a->work_mode === 'remote' ? 'remote' : 'active',
                 'lat' => $a->location_lat,
                 'lng' => $a->location_lng,
+                'location_name' => $this->resolveLocationName($a->location_lat, $a->location_lng),
                 'check_in' => $a->checked_in_at->format('H:i'),
             ]);
     }
@@ -246,6 +248,27 @@ class TeamAnalyticsService
         return Attendance::whereHas('user.teams', function ($query) use ($user) {
             $query->whereIn('teams.id', $user->teams->pluck('id'));
         });
+    }
+
+    /**
+     * Resolve lat/lng to a logical location name.
+     */
+    private function resolveLocationName($lat, $lng): string
+    {
+        if (!$lat || !$lng) return 'Remote';
+
+        $lat = (float) $lat;
+        $lng = (float) $lng;
+
+        // Check if near Jakarta HQ (roughly -6.1754, 106.8272)
+        $distJakarta = sqrt(pow($lat - (-6.1754), 2) + pow($lng - 106.8272, 2));
+        if ($distJakarta < 0.1) return 'Jakarta HQ';
+
+        // Check if near Bandung (roughly -6.9175, 107.6191)
+        $distBandung = sqrt(pow($lat - (-6.9175), 2) + pow($lng - 107.6191, 2));
+        if ($distBandung < 0.1) return 'Bandung Hub';
+
+        return 'Remote Area';
     }
 
     /**
