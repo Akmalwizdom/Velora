@@ -34,8 +34,8 @@ class TeamAnalyticsService
     public function getActiveCount(User $user): int
     {
         return $this->getScopedAttendanceQuery($user)
-            ->today()
             ->active()
+            ->where('checked_in_at', '>=', now()->subHours(24))
             ->count();
     }
 
@@ -127,8 +127,8 @@ class TeamAnalyticsService
     public function getActiveMembers(User $user): Collection
     {
         return $this->getScopedAttendanceQuery($user)
-            ->today()
             ->active()
+            ->where('checked_in_at', '>=', now()->subHours(24))
             ->with('user')
             ->get()
             ->map(fn (Attendance $a) => [

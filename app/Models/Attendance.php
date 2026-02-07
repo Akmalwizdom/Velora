@@ -54,7 +54,9 @@ class Attendance extends Model
 
     public function scopeToday(Builder $query): Builder
     {
-        return $query->whereDate('checked_in_at', today());
+        // Use the application's timezone to determine the logical "today"
+        // This ensures check-ins after 12:00 AM local time are included
+        return $query->where('checked_in_at', '>=', now()->startOfDay());
     }
 
     public function scopeThisWeek(Builder $query): Builder
