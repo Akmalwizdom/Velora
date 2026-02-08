@@ -40,7 +40,7 @@ class AttendanceService
             $status = $schedule->isLate($now) ? 'late' : 'on_time';
         } else {
             // Fallback to legacy default if no schedule found (failsafe)
-            $scheduledStart = Carbon::today()->setHour(9);
+            $scheduledStart = Carbon::today()->setHour(8);
             $status = $now->gt($scheduledStart->addMinutes(15)) ? 'late' : 'on_time';
         }
 
@@ -142,7 +142,7 @@ class AttendanceService
             'checkedInAt' => $attendance?->checked_in_at?->toIso8601String(),
             'schedule' => $schedule 
                 ? "{$schedule->formatted_start_time} - {$schedule->formatted_end_time}"
-                : '09:00 - 18:00',
+                : '08:00 - 16:30',
             'cluster' => $attendance?->cluster ?? 'N/A',
             'workMode' => $attendance?->work_mode ?? 'office',
         ];

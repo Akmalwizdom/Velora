@@ -16,8 +16,8 @@ class WorkScheduleSeeder extends Seeder
         WorkSchedule::create([
             'name' => 'Regular Office Hours',
             'code' => 'REG-OFFICE',
-            'start_time' => '09:00',
-            'end_time' => '18:00',
+            'start_time' => '08:00',
+            'end_time' => '16:30',
             'break_duration_minutes' => 60,
             'work_days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
             'late_tolerance_minutes' => 15,
