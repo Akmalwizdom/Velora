@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/react';
-import { HelpCircle, LayoutGrid, Settings, Shield, User, Zap, Users, Clock } from 'lucide-react';
+import { HelpCircle, LayoutGrid, Settings, Shield, User, Zap, Users, Clock, TrendingUp } from 'lucide-react';
 import React from 'react';
 import {
     Sidebar,
@@ -15,6 +15,7 @@ import {
 
 const navItems = [
     { name: 'Overview', icon: LayoutGrid, href: '/team-analytics' },
+    { name: 'Team Performance', icon: TrendingUp, href: '/team-performance' },
     { name: 'Attendance', icon: Zap, href: '/attendance-hub' },
     { name: 'Compliance', icon: Shield, href: '/log-management' },
     { name: 'Performance', icon: User, href: '/performance' },
