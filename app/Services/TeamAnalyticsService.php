@@ -240,7 +240,7 @@ class TeamAnalyticsService
     /**
      * Helper to get scoped user query.
      */
-    private function getScopedUsersQuery(User $user)
+    public function getScopedUsersQuery(User $user)
     {
         if ($user->isAdmin()) {
             return User::query();
@@ -254,7 +254,7 @@ class TeamAnalyticsService
     /**
      * Helper to get scoped attendance query.
      */
-    private function getScopedAttendanceQuery(User $user)
+    public function getScopedAttendanceQuery(User $user)
     {
         if ($user->isAdmin()) {
             return Attendance::query();
