@@ -91,6 +91,66 @@ class TeamAnalyticsService
 
 
     /**
+     * Get detailed attendance metrics for employees for the current month.
+     */
+    public function getEmployeeDetailedMetrics(User $user): array
+    {
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfDay();
+        
+        // Target working days in the month so far (Mon-Fri)
+        $targetDays = $startOfMonth->diffInDaysFiltered(function ($date) {
+            return $date->isWeekday();
+        }, $endOfMonth) + ($startOfMonth->isWeekday() ? 1 : 0);
+
+        return $this->getScopedUsersQuery($user)
+            ->with(['attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
+                $query->whereBetween('checked_in_at', [$startOfMonth, $endOfMonth]);
+            }])
+            ->get()
+            ->map(function ($u) use ($targetDays) {
+                $attendances = $u->attendances;
+                
+                $daysPresent = $attendances->groupBy(function ($a) {
+                    return $a->checked_in_at->format('Y-m-d');
+                })->count();
+
+                $totalRecords = $attendances->count();
+                $onTimeCount = $attendances->where('status', 'on_time')->count();
+                $lateCount = $attendances->where('status', 'late')->count();
+
+                $punctualityRate = $totalRecords > 0 
+                    ? round(($onTimeCount / $totalRecords) * 100) 
+                    : 100;
+
+                return [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'avatar' => 'https://i.pravatar.cc/150?u='.$u->id,
+                    'presence' => [
+                        'current' => $daysPresent,
+                        'target' => $targetDays,
+                        'percentage' => $targetDays > 0 ? round(($daysPresent / $targetDays) * 100) : 0,
+                    ],
+                    'punctuality' => [
+                        'rate' => $punctualityRate,
+                    ],
+                    'lateness' => [
+                        'count' => $lateCount,
+                    ],
+                    // Detailed logs for drill-down
+                    'dailyLogs' => $attendances->map(fn ($a) => [
+                        'date' => $a->checked_in_at->format('d M'),
+                        'checkIn' => $a->checked_in_at->format('H:i'),
+                        'checkOut' => $a->checked_out_at ? $a->checked_out_at->format('H:i') : null,
+                        'status' => $a->status,
+                        'location' => $this->resolveLocationName($a->location_lat, $a->location_lng),
+                    ])->values()->all(),
+                ];
+            })->values()->all();
+    }
+
+    /**
      * Get all active members with their locations.
      */
     public function getActiveMembers(User $user): Collection

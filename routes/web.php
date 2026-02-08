@@ -5,6 +5,7 @@ use App\Http\Controllers\CorrectionController;
 use App\Http\Controllers\InsightsController;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\TeamAnalyticsController;
+use App\Http\Controllers\TeamPerformanceController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::middleware('role:manager,admin')->group(function () {
         Route::get('dashboard', [TeamAnalyticsController::class, 'index'])->name('dashboard');
         Route::get('team-analytics', [TeamAnalyticsController::class, 'index'])->name('team-analytics');
+        Route::get('team-performance', [TeamPerformanceController::class, 'index'])->name('team-performance');
         Route::get('log-management', [CorrectionController::class, 'index'])->name('log-management');
     });
 

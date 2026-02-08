@@ -64,6 +64,41 @@ export interface TeamAnalyticsProps {
     energyFlux: number[];
 }
 
+// Team Performance Props
+export interface TeamPerformanceProps {
+    employeeMetrics: EmployeeMetric[];
+    teamSummary: {
+        avgPunctuality: number;
+        totalEmployees: number;
+    };
+}
+
+export interface EmployeeMetric {
+    id: number;
+    name: string;
+    avatar: string;
+    presence: {
+        current: number;
+        target: number;
+        percentage: number;
+    };
+    punctuality: {
+        rate: number;
+    };
+    lateness: {
+        count: number;
+    };
+    dailyLogs: DailyLogEntry[];
+}
+
+export interface DailyLogEntry {
+    date: string;
+    checkIn: string;
+    checkOut: string | null;
+    status: string;
+    location: string;
+}
+
 export interface PulseFeedItem {
     type: 'warning' | 'peak' | 'success';
     title: string;

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Shield, User, Zap } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Shield, TrendingUp, User, Zap } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -21,6 +21,11 @@ const mainNavItems: NavItem[] = [
         title: 'Team Analytics',
         href: '/team-analytics',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Team Performance',
+        href: '/team-performance',
+        icon: TrendingUp,
     },
     {
         title: 'Attendance Hub',
