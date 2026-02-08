@@ -101,15 +101,14 @@ export default function TeamAnalytics({
                     </div>
 
                     {/* Stats Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                         <StatCard label="Presence" value={`${stats.presence}%`} trend="+4.2%" trendColor="green" />
                         <StatCard label="Active Now" value={String(stats.activeNow)} subValue="Members" isPrimary />
-                        <StatCard label="Remote" value={String(stats.remote)} subValue="Locations" />
                         <StatCard label="Late/Absent" value={String(stats.lateAbsent)} subValue="Today" trend="Action" trendColor="red" />
                     </div>
 
                     {/* Attendance Snapshot - Workforce Overview */}
-                    <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="mb-8 grid grid-cols-1 gap-6">
                         <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -125,30 +124,14 @@ export default function TeamAnalytics({
                                 )}
                             </div>
                         </div>
-
-                        <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-                                    <Monitor className="size-4 text-primary" /> Remote Active
-                                </h3>
-                                <span className="text-[10px] font-bold text-muted-dynamics/40 uppercase">{remoteMembers.length} Members</span>
-                            </div>
-                            <div className="space-y-4">
-                                {remoteMembers.length > 0 ? remoteMembers.slice(0, 3).map((member) => (
-                                    <TeamMemberRow key={member.id} name={member.name} time={member.time || 'Remote'} img={member.avatar} status="remote" />
-                                )) : (
-                                    <p className="text-xs text-muted-dynamics/60 italic">No remote members</p>
-                                )}
-                            </div>
-                        </div>
                     </div>
 
                     {/* Atmospheric Map Container */}
                     <div className="flex-1 min-h-[400px] md:min-h-[500px] relative rounded-2xl bg-[#0a1214] border border-white/5 overflow-hidden grid-bg">
                         {/* Legend - Simplified to only Active/Remote */}
-                        <div className="absolute top-4 left-4 md:top-6 md:left-6 flex flex-col gap-2 z-10">
+                        <div className="hidden lg:grid grid-cols-2 gap-4">
                             <LegendItem color="bg-primary" label="Active Now" active />
-                            <LegendItem color="bg-white/10" label="Remote" />
+                            <LegendItem color="bg-white/10" label="HQ Zones" />
                         </div>
 
                         {/* Map Visualization (CSS/SVG) */}
@@ -176,7 +159,7 @@ export default function TeamAnalytics({
                                     left={pos.left} 
                                     name={member.name} 
                                     locationName={member.location_name}
-                                    status={member.status === 'remote' ? 'remote' : 'active'} 
+                                    status="active" 
                                     img={member.avatar} 
                                 />
                             );
@@ -282,14 +265,14 @@ interface MapNodeProps {
     right?: string;
     name?: string;
     locationName?: string;
-    status: 'active' | 'remote';
+    status: 'active';
     img?: string;
     count?: number;
 }
 
 function MapNode({ top, left, right, name, locationName, status, img, count }: MapNodeProps) {
-    const isActive = status === 'active';
-    const isRemote = status === 'remote';
+    const isActive = true;
+    const isRemote = false;
 
     return (
         <div 
@@ -325,9 +308,8 @@ function MapNode({ top, left, right, name, locationName, status, img, count }: M
                     )}
                 </div>
             )}
-            {name && <p className={cn('text-[10px] font-black mt-2 uppercase tracking-tight', isActive ? 'text-primary' : 'text-muted-dynamics')}>{name}</p>}
+            {name && <p className={cn('text-[10px] font-black mt-2 uppercase tracking-tight text-primary')}>{name}</p>}
             {locationName && <p className="text-[8px] font-bold text-muted-dynamics/50 uppercase tracking-tighter">{locationName}</p>}
-            {isRemote && !locationName && <p className="text-[9px] font-bold mt-1 text-muted-dynamics uppercase">Remote</p>}
         </div>
     );
 }

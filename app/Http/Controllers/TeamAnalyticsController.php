@@ -23,11 +23,9 @@ class TeamAnalyticsController extends Controller
             'stats' => [
                 'presence' => $this->teamAnalyticsService->getPresencePercentage($user),
                 'activeNow' => $this->teamAnalyticsService->getActiveCount($user),
-                'remote' => $this->teamAnalyticsService->getRemoteCount($user),
                 'lateAbsent' => $this->teamAnalyticsService->getLateAbsentCount($user),
             ],
             'lateMembers' => $this->teamAnalyticsService->getLateMembers($user),
-            'remoteMembers' => $this->teamAnalyticsService->getRemoteMembers($user),
             'activeMembers' => $this->teamAnalyticsService->getActiveMembers($user),
             'pulseFeed' => $this->teamAnalyticsService->getPulseFeed($user),
             'energyFlux' => $this->teamAnalyticsService->getEnergyFlux($user),

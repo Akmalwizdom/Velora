@@ -24,11 +24,9 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import type { AttendanceHubProps } from '@/types/attendance';
 import { WeeklyRhythmPanel } from '@/components/ui/weekly-rhythm-panel';
-import { WorkModeSelector } from '@/components/ui/work-mode-selector';
 import { BehavioralInsightsPanel } from '@/components/ui/behavioral-insights-panel';
 import { checkIn, checkOut } from '@/routes/attendance';
 
-type WorkMode = 'office' | 'remote' | 'hybrid' | 'business_trip';
 
 interface PageProps extends AttendanceHubProps {}
 
@@ -42,11 +40,10 @@ export default function AttendanceHub({
     const [sessionActive, setSessionActive] = useState(initialSessionActive);
     const [showNote, setShowNote] = useState(false);
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
-    const [selectedWorkMode, setSelectedWorkMode] = useState<WorkMode>(todayStatus.workMode as WorkMode || 'office');
     const [showInsights, setShowInsights] = useState(false); // Toggle for insights panel
 
     // Forms for check-in/out
-    const checkInForm = useForm({ work_mode: selectedWorkMode });
+    const checkInForm = useForm({});
     const checkOutForm = useForm({ note: '' });
 
     // Timer effect
@@ -79,7 +76,6 @@ export default function AttendanceHub({
     const time = formatTime(elapsedSeconds);
 
     const handleStartSession = () => {
-        checkInForm.setData('work_mode', selectedWorkMode);
         checkInForm.post(checkIn.url(), {
             preserveScroll: true,
             onSuccess: () => {
@@ -116,12 +112,7 @@ export default function AttendanceHub({
                         <span className="text-white text-[10px] font-bold tracking-[0.2em] uppercase">OVERVIEW</span>
                     </div>
                 </div>
-
-                <div className="absolute top-6 md:top-10 right-6 md:right-10 flex items-center gap-4">
-                    <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/5">
-                        <Monitor className="size-3.5 text-primary" />
-                        <span className="text-[10px] font-bold tracking-widest text-muted-dynamics uppercase">Location: {todayStatus.workMode === 'remote' ? 'Remote' : 'Office'}</span>
-                    </div>
+                <div className="absolute top-6 md:top-10 right-6 md:right-10">
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
                         <div className={cn('size-1.5 rounded-full animate-pulse shadow-[0_0_8px_rgba(19,200,236,0.5)]', sessionActive ? 'bg-primary' : 'bg-slate-500')}></div>
                         <span className="text-[10px] font-bold tracking-widest text-muted-dynamics uppercase">{sessionActive ? 'Checked In' : 'Ready to Check In'}</span>
@@ -163,16 +154,6 @@ export default function AttendanceHub({
                             <TimeBlock value={time.seconds} label="SEC" isPrimary />
                         </div>
 
-                        {/* Work Mode Selector - Pre-session */}
-                        {!sessionActive && !showNote && (
-                            <div className="mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <WorkModeSelector
-                                    value={selectedWorkMode}
-                                    onChange={(mode) => setSelectedWorkMode(mode)}
-                                    disabled={isLoading}
-                                />
-                            </div>
-                        )}
 
                         {/* Action Button */}
                         {!showNote ? (

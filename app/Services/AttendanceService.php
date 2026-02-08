@@ -20,11 +20,11 @@ class AttendanceService
      */
     public function checkIn(
         User $user,
-        string $workMode = 'office',
         ?string $cluster = null,
         string $deviceType = 'web',
         ?array $locationSignal = null
     ): Attendance {
+        $workMode = 'office'; // Default to office for simplicity
         // Check if already checked in today
         $existing = $user->todayAttendance;
 
@@ -32,11 +32,6 @@ class AttendanceService
             throw new \RuntimeException('Already checked in. Please check out first.');
         }
 
-        // Validate work mode against organization settings
-        $validModes = OrganizationSetting::getWorkModes();
-        if (!in_array($workMode, $validModes)) {
-            $workMode = 'office'; // Fallback to default
-        }
 
         $schedule = $user->currentWorkSchedule();
         $now = now();

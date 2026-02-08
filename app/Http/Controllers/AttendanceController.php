@@ -38,7 +38,6 @@ class AttendanceController extends Controller
     public function checkIn(Request $request): RedirectResponse
     {
         $request->validate([
-            'work_mode' => 'nullable|in:office,remote,hybrid,business_trip',
             'location_lat' => 'nullable|numeric|between:-90,90',
             'location_lng' => 'nullable|numeric|between:-180,180',
             'location_accuracy' => 'nullable|string|max:20',
@@ -60,7 +59,6 @@ class AttendanceController extends Controller
         try {
             $this->attendanceService->checkIn(
                 $request->user(),
-                $request->input('work_mode', 'office'),
                 null, // cluster
                 $deviceType,
                 $locationSignal

@@ -39,16 +39,6 @@ class TeamAnalyticsService
             ->count();
     }
 
-    /**
-     * Get count of remote workers today, scoped by user.
-     */
-    public function getRemoteCount(User $user): int
-    {
-        return $this->getScopedAttendanceQuery($user)
-            ->today()
-            ->where('work_mode', 'remote')
-            ->count();
-    }
 
     /**
      * Get count of late/absent users today, scoped by user.
@@ -99,28 +89,6 @@ class TeamAnalyticsService
             ]);
     }
 
-    /**
-     * Get remote members for today, scoped by user.
-     */
-    public function getRemoteMembers(User $user): Collection
-    {
-        return $this->getScopedAttendanceQuery($user)
-            ->today()
-            ->where('work_mode', 'remote')
-            ->with('user')
-            ->limit(5)
-            ->get()
-            ->map(fn (Attendance $a) => [
-                'id' => $a->user->id,
-                'name' => $this->getShortName($a->user->name),
-                'time' => $a->cluster ?? 'Remote',
-                'avatar' => 'https://i.pravatar.cc/150?u='.$a->user->id,
-                'status' => 'remote',
-                'lat' => $a->location_lat,
-                'lng' => $a->location_lng,
-                'location_name' => $this->resolveLocationName($a->location_lat, $a->location_lng),
-            ]);
-    }
 
     /**
      * Get all active members with their locations.
@@ -136,7 +104,7 @@ class TeamAnalyticsService
                 'id' => $a->user->id,
                 'name' => $this->getShortName($a->user->name),
                 'avatar' => 'https://i.pravatar.cc/150?u='.$a->user->id,
-                'status' => $a->work_mode === 'remote' ? 'remote' : 'active',
+                'status' => 'active',
                 'lat' => $a->location_lat,
                 'lng' => $a->location_lng,
                 'location_name' => $this->resolveLocationName($a->location_lat, $a->location_lng),
@@ -151,22 +119,9 @@ class TeamAnalyticsService
     {
         $items = [];
 
-        // Check for collaboration dip (simplified logic)
-        $remoteCount = $this->getRemoteCount($user);
-        $activeCount = $this->getActiveCount($user);
-        $remotePercentage = $activeCount > 0 ? ($remoteCount / $activeCount * 100) : 0;
-        
-        if ($remotePercentage > 50) {
-            $items[] = [
-                'type' => 'warning',
-                'title' => 'Collaboration Dip',
-                'desc' => 'Cross-team sync is '.round(100 - $remotePercentage).'% lower than normal. Focus blocks might be overlapping.',
-                'action' => 'View Heatmap',
-            ];
-        }
-
         // Peak productivity (if many users active)
         $presencePercentage = $this->getPresencePercentage($user);
+        $activeCount = $this->getActiveCount($user);
         if ($presencePercentage >= 80) {
             $items[] = [
                 'type' => 'peak',
