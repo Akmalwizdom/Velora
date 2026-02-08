@@ -27,6 +27,7 @@ class AttendanceController extends Controller
             'weeklyProgress' => $this->attendanceService->getWeeklyProgress($user),
             'activeTeamMembers' => $this->attendanceService->getActiveTeamMembers($user),
             'performanceData' => $this->attendanceService->getPerformanceData($user),
+            'attendanceMetrics' => $this->attendanceService->getAttendanceMetrics($user),
         ]);
     }
 

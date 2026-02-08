@@ -35,7 +35,12 @@ export default function AttendanceHub({
     todayStatus = { status: 'not_checked_in', checkedInAt: null, schedule: '09:00 - 18:00', cluster: 'N/A', workMode: 'office' },
     weeklyProgress = { hoursWorked: 0, targetHours: 40, percentage: 0 },
     activeTeamMembers = { members: [], remainingCount: 0, totalActive: 0 },
-    performanceData = { trend: 0, weeklyBars: [0, 0, 0, 0, 0, 0, 0] }
+    performanceData = { trend: 0, weeklyBars: [0, 0, 0, 0, 0, 0, 0] },
+    attendanceMetrics = { 
+        presence: { current: 0, target: 0, percentage: 0 },
+        punctuality: { rate: 0 },
+        lateness: { count: 0 }
+    }
 }: PageProps) {
     const [sessionActive, setSessionActive] = useState(initialSessionActive);
     const [showNote, setShowNote] = useState(false);
@@ -227,66 +232,66 @@ export default function AttendanceHub({
 
                 {/* Bottom Stats Row */}
                 <div className="w-full max-w-[1100px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                    {/* Weekly Goal */}
+                    {/* Kehadiran Card */}
                     <HubStatCard 
-                        label="Weekly Goal" 
+                        label="Kehadiran" 
                         icon={<CheckCircle2 className="size-5 text-primary" />}
                     >
                         <div className="flex flex-col gap-3 mt-1">
                             <div className="flex justify-between items-baseline">
-                                <p className="text-2xl md:text-3xl font-black text-white leading-none">{weeklyProgress.hoursWorked} <span className="text-xs font-normal text-muted-dynamics uppercase tracking-tighter">/ {weeklyProgress.targetHours}h</span></p>
-                                <span className="text-primary text-[10px] font-bold bg-primary/10 px-2 py-0.5 rounded">{weeklyProgress.percentage}%</span>
+                                <p className="text-2xl md:text-3xl font-black text-white leading-none">{attendanceMetrics.presence.current} <span className="text-xs font-normal text-muted-dynamics uppercase tracking-tighter">/ {attendanceMetrics.presence.target} Hari</span></p>
+                                <span className="text-primary text-[10px] font-bold bg-primary/10 px-2 py-0.5 rounded">{attendanceMetrics.presence.percentage}%</span>
                             </div>
                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(19,200,236,0.6)]" style={{ width: `${weeklyProgress.percentage}%` }}></div>
+                                <div className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(19,200,236,0.6)]" style={{ width: `${attendanceMetrics.presence.percentage}%` }}></div>
                             </div>
                         </div>
                     </HubStatCard>
 
-                    {/* Active Team */}
+                    {/* Ketepatan Card */}
                     <HubStatCard 
-                        label="Active Team" 
-                        icon={<Users className="size-5 text-primary" />}
+                        label="Ketepatan" 
+                        icon={<Clock className="size-5 text-primary" />}
                         highlight
                     >
                         <div className="flex items-center gap-4 mt-1">
-                            <div className="flex -space-x-3">
-                                {activeTeamMembers.members.slice(0, 4).map((member, i) => (
-                                    <div key={member.id || i} className="size-10 md:size-11 rounded-full border-2 border-background-dark bg-cover bg-center ring-4 ring-transparent hover:ring-primary/20 transition-all cursor-pointer overflow-hidden shadow-lg" style={{ backgroundImage: `url('${member.avatar}')` }}>
-                                    </div>
-                                ))}
-                                {activeTeamMembers.remainingCount > 0 && (
-                                    <div className="size-10 md:size-11 rounded-full border-2 border-background-dark bg-surface-dark flex items-center justify-center text-[10px] md:text-[11px] font-bold text-white shadow-lg">+{activeTeamMembers.remainingCount}</div>
-                                )}
+                            {/* Radial Percentage Indicator */}
+                            <div className="relative size-14 md:size-16 flex items-center justify-center">
+                                <svg className="absolute inset-0 size-full -rotate-90" viewBox="0 0 100 100">
+                                    <circle className="text-white/5" cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="12" />
+                                    <circle 
+                                        className="text-primary drop-shadow-[0_0_8px_rgba(19,200,236,0.5)]" 
+                                        cx="50" cy="50" r="44" fill="none" 
+                                        stroke="currentColor" strokeWidth="12" 
+                                        strokeDasharray="276.46" strokeDashoffset={276.46 - (276.46 * attendanceMetrics.punctuality.rate / 100)} 
+                                        strokeLinecap="round" 
+                                    />
+                                </svg>
+                                <span className="text-[10px] md:text-xs font-black text-white">{attendanceMetrics.punctuality.rate}%</span>
                             </div>
                             <div className="flex flex-col">
-                                <p className="text-white text-xs font-bold leading-tight">Team Online</p>
-                                <p className="text-muted-dynamics text-[9px] md:text-[10px] uppercase font-bold tracking-tighter mt-0.5">{activeTeamMembers.totalActive} Working Now</p>
+                                <p className="text-white text-xs font-bold leading-tight">Punctuality Rate</p>
+                                <p className="text-muted-dynamics text-[9px] md:text-[10px] uppercase font-bold tracking-tighter mt-0.5">Bulan Ini</p>
                             </div>
                         </div>
                     </HubStatCard>
 
-                    {/* Performance */}
+                    {/* Keterlambatan Card */}
                     <HubStatCard 
-                        label="Performance" 
-                        icon={<TrendingUp className="size-5 text-primary" />}
+                        label="Keterlambatan" 
+                        icon={<Zap className="size-5 text-amber-500" />}
                     >
                         <div className="flex flex-col mt-1">
-                            <div className="flex justify-between items-center mb-2">
-                                <p className="text-2xl md:text-3xl font-black text-white leading-none">{performanceData.trend >= 0 ? '+' : ''}{performanceData.trend}%</p>
-                                <div className="flex items-center gap-1 text-[8px] md:text-[9px] font-bold text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded">
-                                    <TrendingUp className="size-3" /> PEAK
+                            <div className="flex justify-between items-center">
+                                <p className="text-2xl md:text-3xl font-black text-white leading-none">{attendanceMetrics.lateness.count} <span className="text-xs font-normal text-muted-dynamics uppercase tracking-tighter">Kali</span></p>
+                                <div className={cn(
+                                    "flex items-center gap-1 text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded",
+                                    attendanceMetrics.lateness.count > 0 ? "text-amber-400 bg-amber-500/10" : "text-green-400 bg-green-500/10"
+                                )}>
+                                    {attendanceMetrics.lateness.count > 3 ? 'WARNING' : attendanceMetrics.lateness.count > 0 ? 'ALERT' : 'PERFECT'}
                                 </div>
                             </div>
-                            <div className="flex gap-1 h-8 md:h-10 items-end">
-                                {performanceData.weeklyBars.map((h, i) => (
-                                    <div 
-                                        key={i} 
-                                        style={{ height: `${h}%` }} 
-                                        className={cn('flex-1 rounded-sm transition-all duration-500', i === 4 ? 'bg-primary shadow-[0_0_12px_rgba(19,200,236,0.5)]' : 'bg-white/10 hover:bg-white/20')} 
-                                    />
-                                ))}
-                            </div>
+                            <p className="text-muted-dynamics text-[9px] md:text-[10px] uppercase font-bold tracking-tighter mt-2">Terdeteksi Terlambat Bulan Ini</p>
                         </div>
                     </HubStatCard>
                 </div>

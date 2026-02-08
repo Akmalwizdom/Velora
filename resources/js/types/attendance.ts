@@ -35,6 +35,19 @@ export interface AttendanceHubProps {
         trend: number;
         weeklyBars: number[];
     };
+    attendanceMetrics: {
+        presence: {
+            current: number;
+            target: number;
+            percentage: number;
+        };
+        punctuality: {
+            rate: number;
+        };
+        lateness: {
+            count: number;
+        };
+    };
 }
 
 // Team Analytics Props

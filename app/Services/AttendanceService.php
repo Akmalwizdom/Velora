@@ -233,6 +233,61 @@ class AttendanceService
     }
 
     /**
+     * Get attendance metrics for the current month.
+     */
+    public function getAttendanceMetrics(User $user): array
+    {
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+        
+        // Count unique days with attendance this month
+        $daysPresent = Attendance::where('user_id', $user->id)
+            ->whereBetween('checked_in_at', [$startOfMonth, $endOfMonth])
+            ->select(DB::raw('DATE(checked_in_at) as date'))
+            ->groupBy('date')
+            ->get()
+            ->count();
+
+        // Calculate total working days so far (simplified: Mon-Fri)
+        $limit = now()->isBefore($endOfMonth) ? now()->endOfDay() : $endOfMonth;
+        $workingDays = $startOfMonth->diffInDaysFiltered(function ($date) {
+            return $date->isWeekday();
+        }, $limit) + ($startOfMonth->isWeekday() ? 1 : 0);
+
+        $totalAttendances = Attendance::where('user_id', $user->id)
+            ->whereBetween('checked_in_at', [$startOfMonth, $endOfMonth])
+            ->count();
+
+        $onTimeAttendances = Attendance::where('user_id', $user->id)
+            ->whereBetween('checked_in_at', [$startOfMonth, $endOfMonth])
+            ->where('status', 'on_time')
+            ->count();
+
+        $lateCount = Attendance::where('user_id', $user->id)
+            ->whereBetween('checked_in_at', [$startOfMonth, $endOfMonth])
+            ->where('status', 'late')
+            ->count();
+
+        $punctualityRate = $totalAttendances > 0 
+            ? round(($onTimeAttendances / $totalAttendances) * 100) 
+            : 100;
+
+        return [
+            'presence' => [
+                'current' => $daysPresent,
+                'target' => $workingDays,
+                'percentage' => $workingDays > 0 ? round(($daysPresent / $workingDays) * 100) : 0,
+            ],
+            'punctuality' => [
+                'rate' => $punctualityRate,
+            ],
+            'lateness' => [
+                'count' => $lateCount,
+            ]
+        ];
+    }
+
+    /**
      * Generate a random cluster identifier.
      */
     private function generateCluster(): string
