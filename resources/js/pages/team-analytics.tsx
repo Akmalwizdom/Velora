@@ -175,7 +175,7 @@ export default function TeamAnalytics({
                                     top={pos.top} 
                                     left={pos.left} 
                                     name={member.name} 
-                                    location={member.location_name}
+                                    locationName={member.location_name}
                                     status={member.status === 'remote' ? 'remote' : 'active'} 
                                     img={member.avatar} 
                                 />
@@ -281,13 +281,13 @@ interface MapNodeProps {
     left?: string;
     right?: string;
     name?: string;
-    location?: string;
+    locationName?: string;
     status: 'active' | 'remote';
     img?: string;
     count?: number;
 }
 
-function MapNode({ top, left, right, name, status, img, count }: MapNodeProps) {
+function MapNode({ top, left, right, name, locationName, status, img, count }: MapNodeProps) {
     const isActive = status === 'active';
     const isRemote = status === 'remote';
 
@@ -326,8 +326,8 @@ function MapNode({ top, left, right, name, status, img, count }: MapNodeProps) {
                 </div>
             )}
             {name && <p className={cn('text-[10px] font-black mt-2 uppercase tracking-tight', isActive ? 'text-primary' : 'text-muted-dynamics')}>{name}</p>}
-            {location && <p className="text-[8px] font-bold text-muted-dynamics/50 uppercase tracking-tighter">{location}</p>}
-            {isRemote && !location && <p className="text-[9px] font-bold mt-1 text-muted-dynamics uppercase">Remote</p>}
+            {locationName && <p className="text-[8px] font-bold text-muted-dynamics/50 uppercase tracking-tighter">{locationName}</p>}
+            {isRemote && !locationName && <p className="text-[9px] font-bold mt-1 text-muted-dynamics uppercase">Remote</p>}
         </div>
     );
 }
