@@ -31,6 +31,15 @@ class User extends Authenticatable
     ];
 
     /**
+     * The attributes that should be apppended to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'avatar',
+    ];
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
@@ -157,6 +166,14 @@ class User extends Authenticatable
 
         // 3. Resolve Global Default
         return WorkSchedule::active()->default()->first();
+    }
+
+    /**
+     * Get the user's avatar URL.
+     */
+    public function getAvatarAttribute(): string
+    {
+        return 'https://i.pravatar.cc/150?u=' . $this->id;
     }
 
     // Status Helpers
