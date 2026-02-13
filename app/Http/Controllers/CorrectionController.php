@@ -55,4 +55,37 @@ class CorrectionController extends Controller
 
         return back()->with('success', 'Correction rejected.');
     }
+
+    /**
+     * Store a new correction request.
+     */
+    public function store(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'attendance_id' => 'required|exists:attendances,id',
+            'type' => 'required|in:check_in,check_out',
+            'proposed_time' => 'required|date_format:H:i',
+            'reason' => 'required|string|max:500',
+        ]);
+
+        try {
+            // Combine today's date with proposed time if it's for today,
+            // or use the attendance record's date if it's for a previous day.
+            $attendance = \App\Models\Attendance::findOrFail($request->attendance_id);
+            $date = $attendance->checked_in_at->format('Y-m-d');
+            $proposedDateTime = $date . ' ' . $request->proposed_time;
+
+            $this->correctionService->requestCorrection(
+                auth()->user(),
+                $request->attendance_id,
+                $request->type,
+                $proposedDateTime,
+                $request->reason
+            );
+
+            return back()->with('success', 'Correction request submitted successfully.');
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['correction' => $e->getMessage()]);
+        }
+    }
 }

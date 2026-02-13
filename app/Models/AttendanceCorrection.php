@@ -13,6 +13,7 @@ class AttendanceCorrection extends Model
 
     protected $fillable = [
         'attendance_id',
+        'type',
         'requested_by',
         'reviewed_by',
         'original_time',

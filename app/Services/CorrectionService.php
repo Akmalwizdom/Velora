@@ -155,10 +155,17 @@ class CorrectionService
 
         // Apply the correction to the attendance record
         $attendance = $correction->attendance;
-        $attendance->update([
-            'checked_in_at' => $correction->proposed_time,
-            'status' => 'on_time', // Correction implies it was valid
-        ]);
+        
+        if ($correction->type === 'check_out') {
+            $attendance->update([
+                'checked_out_at' => $correction->proposed_time,
+            ]);
+        } else {
+            $attendance->update([
+                'checked_in_at' => $correction->proposed_time,
+                'status' => 'on_time', // Correction implies it was valid
+            ]);
+        }
 
         // Generate transparent audit trail (NON-NEGOTIABLE requirement)
         $this->auditService->logCorrectionApproval($correction, $attendance, $reviewer);
@@ -178,5 +185,40 @@ class CorrectionService
             $correction->attendance,
             $reviewer
         );
+    }
+
+    /**
+     * Request a correction for an attendance record.
+     */
+    public function requestCorrection(User $user, int $attendanceId, string $type, string $proposedTime, string $reason): AttendanceCorrection
+    {
+        $attendance = \App\Models\Attendance::findOrFail($attendanceId);
+        
+        // Ensure user owns the attendance or is a manager
+        if (!$user->isAdmin() && $attendance->user_id !== $user->id) {
+            throw new \RuntimeException('Unauthorized to request correction for this record.');
+        }
+
+        // Check for existing pending correction
+        $existing = AttendanceCorrection::where('attendance_id', $attendanceId)
+            ->where('status', 'pending')
+            ->first();
+            
+        if ($existing) {
+            throw new \RuntimeException('A correction request is already pending for this record.');
+        }
+
+        $proposedDateTime = \Carbon\Carbon::parse($proposedTime);
+        $originalTime = $type === 'check_out' ? $attendance->checked_out_at : $attendance->checked_in_at;
+
+        return AttendanceCorrection::create([
+            'attendance_id' => $attendanceId,
+            'type' => $type,
+            'requested_by' => $user->id,
+            'original_time' => $originalTime ?? $attendance->checked_in_at, // Fallback to check-in if check-out is null
+            'proposed_time' => $proposedDateTime,
+            'reason' => $reason,
+            'status' => 'pending',
+        ]);
     }
 }
