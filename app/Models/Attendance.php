@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Attendance extends Model
 {
@@ -24,6 +25,7 @@ class Attendance extends Model
         'location_lat',
         'location_lng',
         'location_accuracy',
+        'validation_method',
     ];
 
     protected $casts = [
@@ -48,6 +50,11 @@ class Attendance extends Model
     public function auditLogs(): HasMany
     {
         return $this->hasMany(AttendanceAuditLog::class);
+    }
+
+    public function qrSession(): HasOne
+    {
+        return $this->hasOne(QrSession::class);
     }
 
     // Scopes

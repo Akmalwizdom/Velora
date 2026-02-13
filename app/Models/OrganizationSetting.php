@@ -76,6 +76,33 @@ class OrganizationSetting extends Model
     }
 
     /**
+     * Get the current QR attendance mode.
+     * Default is 'required' to establish attendance culture.
+     */
+    public static function getQrMode(): string
+    {
+        // 'required' | 'optional' | 'hybrid'
+        return static::get('attendance.qr_mode', 'required');
+    }
+
+    /**
+     * Get QR token TTL in seconds.
+     * Hard-capped between 10s and 120s. Default 30s.
+     */
+    public static function getQrTtlSeconds(): int
+    {
+        return min(120, max(10, (int) static::get('attendance.qr_ttl_seconds', 30)));
+    }
+
+    /**
+     * Check if QR validation is mandatory for presence.
+     */
+    public static function isQrRequired(): bool
+    {
+        return static::getQrMode() === 'required';
+    }
+
+    /**
      * Cast value based on type.
      */
     private static function castValue(string $value, string $type): mixed
