@@ -21,13 +21,18 @@ class AttendanceController extends Controller
     {
         $user = auth()->user();
 
+        // The instruction implies assigning attendanceMetrics to a variable first
+        $metrics = $this->attendanceService->getAttendanceMetrics($user);
+
         return Inertia::render('attendance-hub', [
             'sessionActive' => $this->attendanceService->isSessionActive($user),
             'todayStatus' => $this->attendanceService->getTodayStatus($user),
             'weeklyProgress' => $this->attendanceService->getWeeklyProgress($user),
             'activeTeamMembers' => $this->attendanceService->getActiveTeamMembers($user),
             'performanceData' => $this->attendanceService->getPerformanceData($user),
-            'attendanceMetrics' => $this->attendanceService->getAttendanceMetrics($user),
+            'attendanceMetrics' => $metrics,
+            'qrMode' => OrganizationSetting::getQrMode(),
+            'qrTtl' => OrganizationSetting::getQrTtlSeconds(),
         ]);
     }
 

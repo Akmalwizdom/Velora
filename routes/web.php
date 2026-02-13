@@ -4,6 +4,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\CorrectionController;
 use App\Http\Controllers\InsightsController;
 use App\Http\Controllers\PerformanceController;
+use App\Http\Controllers\QrAttendanceController;
 use App\Http\Controllers\TeamAnalyticsController;
 use App\Http\Controllers\TeamPerformanceController;
 use App\Http\Controllers\UserManagementController;
@@ -29,6 +30,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::post('attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
     Route::post('attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.check-out');
     Route::get('performance', [PerformanceController::class, 'index'])->name('performance');
+    Route::post('corrections', [CorrectionController::class, 'store'])->name('corrections.store');
 
     // Behavioral insights (observational, non-punitive)
     Route::prefix('insights')->name('insights.')->group(function () {
@@ -63,6 +65,19 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         Route::put('work-schedules/{work_schedule}', [WorkScheduleController::class, 'update'])->name('work-schedules.update');
         Route::delete('work-schedules/{work_schedule}', [WorkScheduleController::class, 'destroy'])->name('work-schedules.destroy');
         Route::post('work-schedules/{work_schedule}/assign', [WorkScheduleController::class, 'assign'])->name('work-schedules.assign');
+    });
+
+    // QR Attendance (Presence Validation)
+    Route::prefix('qr')->name('qr.')->group(function () {
+        Route::middleware('role:manager,admin')->group(function () {
+            Route::get('display', [QrAttendanceController::class, 'display'])->name('display');
+            Route::get('generate', [QrAttendanceController::class, 'generate'])->name('generate');
+            Route::post('revoke', [QrAttendanceController::class, 'revoke'])->name('revoke');
+        });
+
+        Route::post('validate', [QrAttendanceController::class, 'validate'])
+            ->middleware('throttle:5,1') // Max 5 attempts per minute per user/IP
+            ->name('validate');
     });
 });
 

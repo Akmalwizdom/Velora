@@ -22,14 +22,19 @@ class AttendanceService
         User $user,
         ?string $cluster = null,
         string $deviceType = 'web',
-        ?array $locationSignal = null
+        ?array $locationSignal = null,
+        string $validationMethod = 'manual'
     ): Attendance {
         $workMode = 'office'; // Default to office for simplicity
         // Check if already checked in today
         $existing = $user->todayAttendance;
 
         if ($existing?->isActive()) {
-            throw new \RuntimeException('Already checked in. Please check out first.');
+            if ($existing->checked_in_at->isToday()) {
+                throw new \RuntimeException('Already checked in. Please check out first.');
+            } else {
+                throw new \RuntimeException('You have an active session from ' . $existing->checked_in_at->format('M d, Y') . '. Please close it or request a correction before checking in today.');
+            }
         }
 
 
@@ -62,6 +67,7 @@ class AttendanceService
             'location_lat' => $locationData['lat'],
             'location_lng' => $locationData['lng'],
             'location_accuracy' => $locationData['accuracy'],
+            'validation_method' => $validationMethod,
         ]);
 
         // Generate audit trail
@@ -81,19 +87,31 @@ class AttendanceService
             throw new \RuntimeException('No active session found. Please check in first.');
         }
 
+        return $this->forceCheckOut($attendance, now(), $note, 'user');
+    }
+
+    /**
+     * Force check out an attendance session.
+     * Used for auto-closure or administrative corrections.
+     */
+    public function forceCheckOut(Attendance $attendance, Carbon $checkOutAt, ?string $note = null, string $actorType = 'system'): Attendance
+    {
+        fwrite(STDERR, "\n[TRACE] forceCheckOut called from:\n" . (new \Exception())->getTraceAsString() . "\n");
         $previousValues = $attendance->toArray();
 
         $attendance->update([
-            'checked_out_at' => now(), // Server-authoritative
+            'checked_out_at' => $checkOutAt,
             'note' => $note,
         ]);
+
+        fwrite(STDERR, "\n[DEBUG] AFTER UPDATE: id={$attendance->id} checked_out_at=" . $attendance->fresh()->checked_out_at->toDateTimeString() . "\n");
 
         // Generate audit trail for check-out
         $this->auditService->logUpdate(
             $attendance,
             $previousValues,
-            $user,
-            'user'
+            $attendance->user,
+            $actorType
         );
 
         return $attendance->fresh();
