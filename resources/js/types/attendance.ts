@@ -11,6 +11,15 @@ export interface TeamMember {
     status?: 'late' | 'remote' | 'active' | 'away';
 }
 
+export type QrMode = 'required' | 'optional' | 'hybrid';
+
+export interface QrSessionData {
+    token: string;
+    expires_at: string;
+    session_id: number;
+    ttl: number;
+}
+
 // Attendance Hub Props
 export interface AttendanceHubProps {
     sessionActive: boolean;
@@ -19,8 +28,9 @@ export interface AttendanceHubProps {
         checkedInAt: string | null;
         schedule: string;
         cluster: string;
-        workMode: 'office' | 'remote';
+        workMode: 'office' | 'remote' | 'hybrid' | 'business_trip';
     };
+    qrMode: QrMode;
     weeklyProgress: {
         hoursWorked: number;
         targetHours: number;

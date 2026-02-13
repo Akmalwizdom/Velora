@@ -71,6 +71,48 @@
     --color-sidebar-ring: var(--sidebar-ring);
 
     --color-grid-line: rgba(19, 200, 236, 0.05);
+
+    @keyframes qr-scan {
+
+        0%,
+        100% {
+            top: 0%;
+            opacity: 0;
+        }
+
+        10% {
+            opacity: 1;
+        }
+
+        90% {
+            opacity: 1;
+        }
+
+        100% {
+            top: 100%;
+            opacity: 0;
+        }
+    }
+
+    @keyframes qr-pulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.1;
+        }
+
+        50% {
+            transform: scale(1.05);
+            opacity: 0.2;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 0.1;
+        }
+    }
+
+    --animate-qr-scan: qr-scan 2.5s ease-in-out infinite;
+    --animate-qr-pulse: qr-pulse 4s ease-in-out infinite;
 }
 
 :root {
