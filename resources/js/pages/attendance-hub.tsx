@@ -1,5 +1,8 @@
 import DashboardLayout from '@/layouts/app-dashboard-layout';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
+import LogManagement from './log-management';
+import QrScanner from '@/components/ui/qr-scanner';
 import { 
     Clock, 
     MoreVertical, 
@@ -18,10 +21,14 @@ import {
     Building2,
     Home,
     Laptop,
-    Briefcase
+    Briefcase,
+    ArrowRight,
+    Timer,
+    QrCode,
+    Smartphone,
+    BarChart3
 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import { useForm } from '@inertiajs/react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { AttendanceHubProps } from '@/types/attendance';
 import { WeeklyRhythmPanel } from '@/components/ui/weekly-rhythm-panel';
 import { BehavioralInsightsPanel } from '@/components/ui/behavioral-insights-panel';
@@ -36,32 +43,44 @@ export default function AttendanceHub({
     weeklyProgress = { hoursWorked: 0, targetHours: 40, percentage: 0 },
     activeTeamMembers = { members: [], remainingCount: 0, totalActive: 0 },
     performanceData = { trend: 0, weeklyBars: [0, 0, 0, 0, 0, 0, 0] },
-    attendanceMetrics = { 
+    attendanceMetrics = {
         presence: { current: 0, target: 0, percentage: 0 },
         punctuality: { rate: 0 },
         lateness: { count: 0 }
     }
 }: PageProps) {
+    const { props } = usePage();
+    const { qrMode } = props as any; // Cast as any or fix PageProps to include inherited props if needed
+
     const [sessionActive, setSessionActive] = useState(initialSessionActive);
     const [showNote, setShowNote] = useState(false);
-    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+    const [elapsedTime, setElapsedTime] = useState(0);
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [showInsights, setShowInsights] = useState(false); // Toggle for insights panel
 
     // Forms for check-in/out
-    const checkInForm = useForm({});
-    const checkOutForm = useForm({ note: '' });
+    const { post, processing, data, setData } = useForm({ note: '' });
+
+    // Filter team presence data from the actual props
+    const activeStats = useMemo(() => ({
+        presence: attendanceMetrics.presence.percentage,
+        active: activeTeamMembers.totalActive,
+        remote: activeTeamMembers.members.filter(m => m.status === 'remote').length
+    }), [attendanceMetrics.presence.percentage, activeTeamMembers.totalActive, activeTeamMembers.members]);
 
     // Timer effect
     useEffect(() => {
         if (!sessionActive || !todayStatus.checkedInAt) return;
-        
+
         // Calculate initial elapsed from full ISO timestamp
         const checkedInDate = new Date(todayStatus.checkedInAt);
         const initialElapsed = Math.floor((Date.now() - checkedInDate.getTime()) / 1000);
-        setElapsedSeconds(Math.max(0, initialElapsed));
+        setElapsedTime(Math.max(0, initialElapsed));
 
         const interval = setInterval(() => {
-            setElapsedSeconds(s => s + 1);
+            setElapsedTime(s => s + 1);
+            setCurrentTime(new Date()); // Update current time for display
         }, 1000);
 
         return () => clearInterval(interval);
@@ -78,11 +97,16 @@ export default function AttendanceHub({
         };
     };
 
-    const time = formatTime(elapsedSeconds);
+    const time = formatTime(elapsedTime);
 
     const handleStartSession = () => {
-        checkInForm.post(checkIn.url(), {
-            preserveScroll: true,
+        if (qrMode === 'required') {
+            setIsScannerOpen(true);
+            return;
+        }
+
+        // Use regular manual check-in if not required
+        post(checkIn.url(), {
             onSuccess: () => {
                 setSessionActive(true);
                 setShowNote(true);
@@ -91,8 +115,7 @@ export default function AttendanceHub({
     };
 
     const handleEndSession = () => {
-        checkOutForm.post(checkOut.url(), {
-            preserveScroll: true,
+        post(checkOut.url(), {
             onSuccess: () => {
                 setSessionActive(false);
                 setShowNote(false);
@@ -104,7 +127,11 @@ export default function AttendanceHub({
         setShowNote(false);
     };
 
-    const isLoading = checkInForm.processing || checkOutForm.processing;
+    const handleQrSuccess = (attendance: any) => {
+        setIsScannerOpen(false);
+        // Reload page to get fresh state (or update local state if preferred)
+        window.location.reload();
+    };
 
     return (
         <DashboardLayout title="Attendance Hub" slimSidebar={true}>
@@ -130,16 +157,16 @@ export default function AttendanceHub({
                     <div className="absolute size-[400px] md:size-[580px] rounded-full border border-white/[0.02]" />
                     <div className="absolute size-[360px] md:size-[540px] rounded-full border border-white/[0.03]" />
                     <div className="absolute size-[320px] md:size-[500px] rounded-full border border-white/[0.05]" />
-                    
+
                     {/* Progress Arc */}
                     <svg className="absolute size-[300px] md:size-[460px] -rotate-90" viewBox="0 0 100 100">
                         <circle className="text-white/5" cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="0.5" />
-                        <circle 
-                            className="text-primary drop-shadow-[0_0_12px_rgba(19,200,236,0.6)]" 
-                            cx="50" cy="50" fill="none" r="48" 
-                            stroke="currentColor" strokeWidth="2" 
-                            strokeDasharray="301.59" strokeDashoffset={301.59 - (301.59 * weeklyProgress.percentage / 100)} 
-                            strokeLinecap="round" 
+                        <circle
+                            className="text-primary drop-shadow-[0_0_12px_rgba(19,200,236,0.6)]"
+                            cx="50" cy="50" fill="none" r="48"
+                            stroke="currentColor" strokeWidth="2"
+                            strokeDasharray="301.59" strokeDashoffset={301.59 - (301.59 * weeklyProgress.percentage / 100)}
+                            strokeLinecap="round"
                         />
                     </svg>
 
@@ -149,7 +176,7 @@ export default function AttendanceHub({
                             <Zap className="size-5 md:size-6 text-primary mb-2" />
                             <p className="text-muted-dynamics text-[8px] md:text-[10px] font-bold tracking-[0.3em] uppercase">Work Hours</p>
                         </div>
-                        
+
                         {/* Main Timer Component */}
                         <div className="flex gap-2 md:gap-4 items-baseline mb-6 md:mb-8 text-white">
                             <TimeBlock value={time.hours} label="HRS" />
@@ -162,40 +189,66 @@ export default function AttendanceHub({
 
                         {/* Action Button */}
                         {!showNote ? (
-                            <button 
-                                onClick={sessionActive ? handleEndSession : handleStartSession}
-                                disabled={isLoading}
-                                className={cn(
-                                    "group relative px-8 md:px-12 py-3 md:py-4 font-black text-xs md:text-sm tracking-[0.2em] uppercase rounded-xl transition-all flex items-center gap-3 active:scale-95 shadow-xl overflow-hidden disabled:opacity-50",
-                                    sessionActive ? "bg-white/10 text-white border border-white/10" : "bg-primary text-background-dark hover:shadow-[0_0_40px_rgba(19,200,236,0.5)]"
-                                )}
-                            >
-                                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
-                                {isLoading ? (
-                                    <Loader2 className="size-4 animate-spin relative z-10" />
-                                ) : sessionActive ? (
-                                    <Square className="size-4 fill-current relative z-10" />
+                            <div className="flex flex-col items-center">
+                                {!sessionActive ? (
+                                    <button
+                                        onClick={handleStartSession}
+                                        disabled={processing}
+                                        className="group relative px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-[0_10px_30px_rgba(19,200,236,0.3)] hover:shadow-[0_15px_40px_rgba(19,200,236,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:translate-y-0"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            {qrMode === 'required' ? <QrCode className="size-5" /> : <Play className="size-5 fill-current" />}
+                                            {qrMode === 'required' ? 'Mulai Presensi (QR)' : 'Check In'}
+                                            <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                                        </div>
+                                    </button>
                                 ) : (
-                                    <Play className="size-4 fill-current relative z-10" />
+                                    <button
+                                        onClick={handleEndSession}
+                                        disabled={processing}
+                                        className="group relative px-8 py-4 bg-destructive text-destructive-foreground rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-[0_10px_30px_rgba(239,68,68,0.3)] hover:shadow-[0_15px_40px_rgba(239,68,68,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:translate-y-0"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Clock className="size-5" />
+                                            Check Out
+                                            <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                                        </div>
+                                    </button>
                                 )}
-                                <span className="relative z-10">{isLoading ? 'Processing...' : sessionActive ? 'Check Out' : 'Check In'}</span>
-                            </button>
+
+                                {/* Fallback Manual Link for Mixed Modes */}
+                                {qrMode !== 'required' && !sessionActive && (
+                                    <button
+                                        onClick={() => post(checkIn.url())}
+                                        className="ml-4 mt-4 text-[10px] font-black uppercase tracking-widest text-muted-dynamics/40 hover:text-primary transition-colors"
+                                    >
+                                        Atau Check-In Manual
+                                    </button>
+                                )}
+
+                                {qrMode === 'required' && !sessionActive && (
+                                    <p className="mt-4 text-[9px] font-bold text-muted-dynamics/30 uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <Smartphone className="size-3" />
+                                        QR Scanner Diperlukan untuk Validasi
+                                    </p>
+                                )}
+                            </div>
                         ) : (
                             <div className="flex flex-col items-center gap-4 w-full max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="flex items-center gap-2 text-primary">
                                     <CheckCircle2 className="size-5" />
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Checked In Successfully</span>
                                 </div>
-                                <input 
+                                <input
                                     autoFocus
-                                    type="text" 
-                                    placeholder="Add a note (optional)..." 
-                                    value={checkOutForm.data.note}
-                                    onChange={(e) => checkOutForm.setData('note', e.target.value)}
+                                    type="text"
+                                    placeholder="Add a note (optional)..."
+                                    value={data.note}
+                                    onChange={(e) => setData('note', e.target.value)}
                                     onKeyDown={(e) => { if (e.key === 'Enter') handleNoteSubmit(); }}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder:text-muted-dynamics/30 focus:border-primary/50 outline-none transition-all"
                                 />
-                                <button 
+                                <button
                                     onClick={handleNoteSubmit}
                                     className="text-[10px] font-black text-muted-dynamics/40 hover:text-white uppercase tracking-widest transition-colors"
                                 >
@@ -205,6 +258,14 @@ export default function AttendanceHub({
                         )}
                     </div>
                 </div>
+
+                {/* QR Scanner Overlay */}
+                {isScannerOpen && (
+                    <QrScanner
+                        onSuccess={handleQrSuccess}
+                        onClose={() => setIsScannerOpen(false)}
+                    />
+                )}
 
                 {/* Today Status Context Row */}
                 <div className="flex items-center gap-8 mb-12">
