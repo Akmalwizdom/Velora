@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/react';
-import { HelpCircle, LayoutGrid, Settings, Shield, User, Zap, Users, Clock, TrendingUp } from 'lucide-react';
+import { HelpCircle, LayoutGrid, Settings, Shield, User, Zap, Users, Clock, TrendingUp, Monitor } from 'lucide-react';
 import React from 'react';
 import {
     Sidebar,
@@ -13,15 +13,7 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 
-const navItems = [
-    { name: 'Overview', icon: LayoutGrid, href: '/team-analytics' },
-    { name: 'Team Performance', icon: TrendingUp, href: '/team-performance' },
-    { name: 'Attendance', icon: Zap, href: '/attendance-hub' },
-    { name: 'Compliance', icon: Shield, href: '/log-management' },
-    { name: 'Performance', icon: User, href: '/performance' },
-    { name: 'User Management', icon: Users, href: '/admin/users' },
-    { name: 'Work Schedules', icon: Clock, href: '/admin/work-schedules' },
-];
+// navItems moved inside component to support role-based logic
 
 const bottomItems = [
     { name: 'Settings', icon: Settings, href: '/settings' },
@@ -29,8 +21,44 @@ const bottomItems = [
 ];
 
 export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
-    const { url } = usePage();
+    const { url, props } = usePage();
+    const auth = props.auth as any;
+    const role = auth?.user?.role_name;
     const { state, isMobile } = useSidebar();
+
+    const filteredNavItems = [
+        // 1. QR Station (Generator - Top Priority for Admin/Manager)
+        ...(role === 'admin' || role === 'manager'
+            ? [
+                  {
+                      name: 'QR Station',
+                      href: '/qr/display',
+                      icon: Monitor,
+                  },
+              ]
+            : []),
+        // 2. Main Navigation
+        { name: 'Overview', icon: LayoutGrid, href: '/team-analytics' },
+        { name: 'Team Performance', icon: TrendingUp, href: '/team-performance' },
+        { name: 'Attendance', icon: Zap, href: '/attendance-hub' },
+        { name: 'Compliance', icon: Shield, href: '/log-management' },
+        { name: 'Performance', icon: User, href: '/performance' },
+        // 3. Admin Management
+        ...(role === 'admin'
+            ? [
+                  {
+                      name: 'User Management',
+                      href: '/admin/users',
+                      icon: Users,
+                  },
+                  {
+                      name: 'Work Schedules',
+                      href: '/admin/work-schedules',
+                      icon: Clock,
+                  },
+              ]
+            : []),
+    ];
     const isCollapsed = state === 'collapsed' && !isMobile;
 
     return (
@@ -51,7 +79,7 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
 
             <SidebarContent className={cn("px-4 py-2 transition-all duration-300", isCollapsed && "px-0")}>
                 <SidebarMenu className={cn("gap-2", isCollapsed && "items-center")}>
-                    {navItems.map((item) => {
+                    {filteredNavItems.map((item) => {
                         const active = url.startsWith(item.href);
                         return (
                             <SidebarMenuItem key={item.name}>
