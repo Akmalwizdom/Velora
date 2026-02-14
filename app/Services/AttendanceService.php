@@ -88,7 +88,6 @@ class AttendanceService
      */
     public function forceCheckOut(Attendance $attendance, CarbonInterface $checkOutAt, ?string $note = null, string $actorType = 'system'): Attendance
     {
-        fwrite(STDERR, "\n[TRACE] forceCheckOut called from:\n" . (new \Exception())->getTraceAsString() . "\n");
         $previousValues = $attendance->toArray();
 
         $attendance->update([
@@ -96,7 +95,6 @@ class AttendanceService
             'note' => $note,
         ]);
 
-        fwrite(STDERR, "\n[DEBUG] AFTER UPDATE: id={$attendance->id} checked_out_at=" . $attendance->fresh()->checked_out_at->toDateTimeString() . "\n");
 
         // Generate audit trail for check-out
         $this->auditService->logUpdate(

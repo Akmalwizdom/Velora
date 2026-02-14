@@ -46,16 +46,21 @@ class QrAttendanceController extends Controller
         ]);
 
         try {
-            $attendance = $this->qrService->validateAndCheckIn(
+            $result = $this->qrService->validateAndProcess(
                 token: $request->input('token'),
                 user: $request->user(),
-                deviceType: 'mobile' // QR scans primarily happen from mobile
+                deviceType: 'mobile'
             );
+
+            $message = $result['type'] === 'check_in' 
+                ? 'Welcome! Attendance validated successfully.' 
+                : 'Goodbye! Check-out validated successfully.';
 
             return response()->json([
                 'success' => true,
-                'message' => 'Attendance validated successfully!',
-                'attendance' => $attendance,
+                'message' => $message,
+                'type' => $result['type'],
+                'attendance' => $result['attendance'],
             ]);
         } catch (\RuntimeException $e) {
             return response()->json([

@@ -74,16 +74,16 @@ class QrAttendanceService
     }
 
     /**
-     * Validate a QR token and check in the user.
+     * Validate a QR token and process either check-in or check-out.
      * Instant — no post-validation steps required.
      *
      * @throws \RuntimeException on validation failure
      */
-    public function validateAndCheckIn(
+    public function validateAndProcess(
         string $token,
         User $user,
         string $deviceType = 'mobile'
-    ): Attendance {
+    ): array {
         return DB::transaction(function () use ($token, $user, $deviceType) {
             // 1. Verify HMAC signature
             $parts = explode('.', $token, 2);
@@ -143,18 +143,36 @@ class QrAttendanceService
                 throw new \RuntimeException('This QR code is no longer valid. Please scan the latest code.');
             }
 
-            // 7. Delegate to AttendanceService for the actual check-in
-            $attendance = $this->attendanceService->checkIn(
-                user: $user,
-                stationName: null, // Station inherited from QR session display context if implemented, else random
-                deviceType: $deviceType,
-                validationMethod: 'qr'
-            );
+            // 7. Toggle logic: Check In vs Check Out
+            $activeAttendance = $user->attendances()->active()->latest()->first();
+            $type = 'check_in';
+
+            if ($activeAttendance && $activeAttendance->isActive()) {
+                // Already in -> Check them OUT
+                $attendance = $this->attendanceService->forceCheckOut(
+                    $activeAttendance, 
+                    now(), 
+                    'QR Station Departure', 
+                    'user'
+                );
+                $type = 'check_out';
+            } else {
+                // Not in -> Check them IN
+                $attendance = $this->attendanceService->checkIn(
+                    user: $user,
+                    stationName: null, // Station inherited from QR context later
+                    deviceType: $deviceType,
+                    validationMethod: 'qr'
+                );
+            }
 
             // 8. Mark session as consumed
             $session->consume($user, $attendance);
 
-            return $attendance;
+            return [
+                'attendance' => $attendance,
+                'type' => $type
+            ];
         });
     }
 

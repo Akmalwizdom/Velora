@@ -104,12 +104,7 @@ export default function AttendanceHub({
     };
 
     const handleEndSession = () => {
-        post(checkOut.url(), {
-            onSuccess: () => {
-                setSessionActive(false);
-                setShowNote(false);
-            },
-        });
+        setIsScannerOpen(true);
     };
 
     const handleNoteSubmit = () => {

@@ -61,6 +61,30 @@ test('employee can validate presence using QR token', function () {
     expect($dbSession->attendance_id)->toBe($attendance->id);
 });
 
+test('employee can check out using QR token', function () {
+    // 1. Check in first
+    $arrivalSession = $this->qrService->generateToken($this->admin);
+    $this->actingAs($this->employee)
+        ->postJson(route('qr.validate'), ['token' => $arrivalSession['token']]);
+        
+    expect(Attendance::count())->toBe(1);
+    expect(Attendance::first()->isActive())->toBe(true);
+
+    // 2. Scan again (for departure)
+    $departureSession = $this->qrService->generateToken($this->admin);
+    $response = $this->actingAs($this->employee)
+        ->postJson(route('qr.validate'), ['token' => $departureSession['token']]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('type', 'check_out')
+        ->assertJsonPath('message', 'Goodbye! Check-out validated successfully.');
+
+    $attendance = Attendance::first();
+    expect($attendance->isActive())->toBe(false);
+    expect($attendance->checked_out_at)->not->toBeNull();
+});
+
 test('QR token cannot be replayed', function () {
     $sessionData = $this->qrService->generateToken($this->admin);
     
