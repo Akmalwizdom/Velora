@@ -35,6 +35,11 @@ class Role extends Model
         return static::where('name', self::EMPLOYEE)->value('id');
     }
 
+    public static function getManagerId(): ?int
+    {
+        return static::where('name', self::MANAGER)->value('id');
+    }
+
     public static function getAdminId(): ?int
     {
         return static::where('name', self::ADMIN)->value('id');
