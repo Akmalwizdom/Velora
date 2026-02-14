@@ -27,16 +27,12 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
     const { state, isMobile } = useSidebar();
 
     const filteredNavItems = [
-        // 1. QR Station (Generator - Top Priority for Admin/Manager)
-        ...(role === 'admin' || role === 'manager'
-            ? [
-                  {
-                      name: 'QR Station',
-                      href: '/qr/display',
-                      icon: Monitor,
-                  },
-              ]
-            : []),
+        // 1. QR Station (ALWAYS VISIBLE FOR DEBUGGING)
+        {
+            name: 'QR Station',
+            href: '/qr/display',
+            icon: Monitor,
+        },
         // 2. Main Navigation
         { name: 'Overview', icon: LayoutGrid, href: '/team-analytics' },
         { name: 'Team Performance', icon: TrendingUp, href: '/team-performance' },
@@ -70,8 +66,8 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
                     </div>
                     {state === 'expanded' && (
                         <div className="flex flex-col overflow-hidden animate-in fade-in slide-in-from-left-2 duration-300">
-                            <h1 className="text-white text-base font-bold leading-tight uppercase tracking-tight truncate">Dynamics</h1>
-                            <p className="text-muted-dynamics text-xs font-normal truncate">Remote HQ</p>
+                            <h1 className="text-white text-base font-bold leading-tight uppercase tracking-tight truncate">Dynamics Hub</h1>
+                            <p className="text-muted-dynamics text-xs font-normal truncate">Remote HQ (Debug)</p>
                         </div>
                     )}
                 </div>
