@@ -43,26 +43,13 @@ class QrAttendanceController extends Controller
     {
         $request->validate([
             'token' => 'required|string',
-            'location_lat' => 'nullable|numeric|between:-90,90',
-            'location_lng' => 'nullable|numeric|between:-180,180',
-            'location_accuracy' => 'nullable|string|max:20',
         ]);
-
-        $locationSignal = null;
-        if ($request->has('location_lat') && $request->has('location_lng')) {
-            $locationSignal = [
-                'lat' => $request->input('location_lat'),
-                'lng' => $request->input('location_lng'),
-                'accuracy' => $request->input('location_accuracy', 'unknown'),
-            ];
-        }
 
         try {
             $attendance = $this->qrService->validateAndCheckIn(
                 token: $request->input('token'),
                 user: $request->user(),
-                deviceType: 'mobile', // QR scans primarily happen from mobile
-                locationSignal: $locationSignal
+                deviceType: 'mobile' // QR scans primarily happen from mobile
             );
 
             return response()->json([

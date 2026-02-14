@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\OrganizationSetting;
 use App\Services\AttendanceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -44,30 +45,17 @@ class AttendanceController extends Controller
     public function checkIn(Request $request): RedirectResponse
     {
         $request->validate([
-            'location_lat' => 'nullable|numeric|between:-90,90',
-            'location_lng' => 'nullable|numeric|between:-180,180',
-            'location_accuracy' => 'nullable|string|max:20',
+            // Location signals removed for QR-centric simplification
         ]);
 
         // Device detection (lightweight, for audit support only)
         $deviceType = $this->detectDeviceType($request);
 
-        // Optional location signal (check-in moment ONLY, respects org settings)
-        $locationSignal = null;
-        if ($request->has('location_lat') && $request->has('location_lng')) {
-            $locationSignal = [
-                'lat' => $request->input('location_lat'),
-                'lng' => $request->input('location_lng'),
-                'accuracy' => $request->input('location_accuracy', 'unknown'),
-            ];
-        }
-
         try {
             $this->attendanceService->checkIn(
                 $request->user(),
-                null, // cluster
-                $deviceType,
-                $locationSignal
+                null, // stationName
+                $deviceType
             );
 
             return back()->with('success', 'Successfully checked in!');

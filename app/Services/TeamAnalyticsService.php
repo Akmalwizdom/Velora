@@ -144,7 +144,7 @@ class TeamAnalyticsService
                         'checkIn' => $a->checked_in_at->format('H:i'),
                         'checkOut' => $a->checked_out_at ? $a->checked_out_at->format('H:i') : null,
                         'status' => $a->status,
-                        'location' => $this->resolveLocationName($a->location_lat, $a->location_lng),
+                        'station' => $a->station_name,
                     ])->values()->all(),
                 ];
             })->values()->all();
@@ -165,9 +165,7 @@ class TeamAnalyticsService
                 'name' => $this->getShortName($a->user->name),
                 'avatar' => 'https://i.pravatar.cc/150?u='.$a->user->id,
                 'status' => 'active',
-                'lat' => $a->location_lat,
-                'lng' => $a->location_lng,
-                'location_name' => $this->resolveLocationName($a->location_lat, $a->location_lng),
+                'station_name' => $a->station_name,
                 'check_in' => $a->checked_in_at->format('H:i'),
             ]);
     }
@@ -265,26 +263,6 @@ class TeamAnalyticsService
         });
     }
 
-    /**
-     * Resolve lat/lng to a logical location name.
-     */
-    private function resolveLocationName($lat, $lng): string
-    {
-        if (!$lat || !$lng) return 'Remote';
-
-        $lat = (float) $lat;
-        $lng = (float) $lng;
-
-        // Check if near Jakarta HQ (roughly -6.1754, 106.8272)
-        $distJakarta = sqrt(pow($lat - (-6.1754), 2) + pow($lng - 106.8272, 2));
-        if ($distJakarta < 0.1) return 'Jakarta HQ';
-
-        // Check if near Bandung (roughly -6.9175, 107.6191)
-        $distBandung = sqrt(pow($lat - (-6.9175), 2) + pow($lng - 107.6191, 2));
-        if ($distBandung < 0.1) return 'Bandung Hub';
-
-        return 'Remote Area';
-    }
 
     /**
      * Get shortened name (First + Initial).

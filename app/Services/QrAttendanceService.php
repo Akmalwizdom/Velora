@@ -82,10 +82,9 @@ class QrAttendanceService
     public function validateAndCheckIn(
         string $token,
         User $user,
-        string $deviceType = 'mobile',
-        ?array $locationSignal = null
+        string $deviceType = 'mobile'
     ): Attendance {
-        return DB::transaction(function () use ($token, $user, $deviceType, $locationSignal) {
+        return DB::transaction(function () use ($token, $user, $deviceType) {
             // 1. Verify HMAC signature
             $parts = explode('.', $token, 2);
             if (count($parts) !== 2) {
@@ -147,9 +146,8 @@ class QrAttendanceService
             // 7. Delegate to AttendanceService for the actual check-in
             $attendance = $this->attendanceService->checkIn(
                 user: $user,
-                cluster: null,
+                stationName: null, // Station inherited from QR session display context if implemented, else random
                 deviceType: $deviceType,
-                locationSignal: $locationSignal,
                 validationMethod: 'qr'
             );
 

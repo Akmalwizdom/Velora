@@ -45,8 +45,6 @@ test('employee can validate presence using QR token', function () {
     $response = $this->actingAs($this->employee)
         ->postJson(route('qr.validate'), [
             'token' => $sessionData['token'],
-            'location_lat' => -6.200000,
-            'location_lng' => 106.816666,
         ]);
 
     $response->assertStatus(200)

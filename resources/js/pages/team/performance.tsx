@@ -276,7 +276,6 @@ export default function TeamPerformance({
                                                 <ArrowRight className="size-3 text-muted-dynamics/30" />
                                                 <span className="text-sm font-bold text-muted-dynamics">{log.checkOut || '--:--'}</span>
                                             </div>
-                                            <p className="text-[9px] font-bold text-muted-dynamics/30 uppercase tracking-wide mt-1">{log.location}</p>
                                         </div>
                                     </div>
                                     <div className={cn(

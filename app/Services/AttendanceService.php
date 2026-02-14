@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Attendance;
 use App\Models\OrganizationSetting;
 use App\Models\User;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 class AttendanceService
@@ -20,23 +20,18 @@ class AttendanceService
      */
     public function checkIn(
         User $user,
-        ?string $cluster = null,
+        ?string $stationName = null,
         string $deviceType = 'web',
-        ?array $locationSignal = null,
         string $validationMethod = 'manual'
     ): Attendance {
-        $workMode = 'office'; // Default to office for simplicity
-        // Check if already checked in today
+        // Guard: check if session already active
         $existing = $user->todayAttendance;
-
         if ($existing?->isActive()) {
-            if ($existing->checked_in_at->isToday()) {
-                throw new \RuntimeException('Already checked in. Please check out first.');
-            } else {
-                throw new \RuntimeException('You have an active session from ' . $existing->checked_in_at->format('M d, Y') . '. Please close it or request a correction before checking in today.');
-            }
+            $errorMsg = $existing->checked_in_at->isToday() 
+                ? 'Already checked in. Please check out first.'
+                : 'You have an active session from ' . $existing->checked_in_at->format('M d, Y') . '. Please close it before checking in today.';
+            throw new \RuntimeException($errorMsg);
         }
-
 
         $schedule = $user->currentWorkSchedule();
         $now = now();
@@ -44,13 +39,13 @@ class AttendanceService
         if ($schedule) {
             $status = $schedule->isLate($now) ? 'late' : 'on_time';
         } else {
-            // Fallback to legacy default if no schedule found (failsafe)
-            $scheduledStart = Carbon::today()->setHour(8);
+            // Failsafe: Default to 08:00
+            $scheduledStart = now()->startOfDay()->setHour(8);
             $status = $now->gt($scheduledStart->addMinutes(15)) ? 'late' : 'on_time';
         }
 
-        // Prepare location signal (only if organization allows)
-        $locationData = $this->prepareLocationSignal($locationSignal);
+        // Implicitly Office mode for QR/Manual check-in at premises
+        $workMode = 'office';
 
         // Prepare device type (only if organization allows)
         $capturedDeviceType = OrganizationSetting::isDeviceTypeCaptureEnabled()
@@ -59,14 +54,11 @@ class AttendanceService
 
         $attendance = Attendance::create([
             'user_id' => $user->id,
-            'checked_in_at' => $now, // Server-authoritative
+            'checked_in_at' => $now,
             'work_mode' => $workMode,
-            'cluster' => $cluster ?? $this->generateCluster(),
+            'station_name' => $stationName ?? $this->generateStationName(),
             'status' => $status,
             'device_type' => $capturedDeviceType,
-            'location_lat' => $locationData['lat'],
-            'location_lng' => $locationData['lng'],
-            'location_accuracy' => $locationData['accuracy'],
             'validation_method' => $validationMethod,
         ]);
 
@@ -94,7 +86,7 @@ class AttendanceService
      * Force check out an attendance session.
      * Used for auto-closure or administrative corrections.
      */
-    public function forceCheckOut(Attendance $attendance, Carbon $checkOutAt, ?string $note = null, string $actorType = 'system'): Attendance
+    public function forceCheckOut(Attendance $attendance, CarbonInterface $checkOutAt, ?string $note = null, string $actorType = 'system'): Attendance
     {
         fwrite(STDERR, "\n[TRACE] forceCheckOut called from:\n" . (new \Exception())->getTraceAsString() . "\n");
         $previousValues = $attendance->toArray();
@@ -117,27 +109,6 @@ class AttendanceService
         return $attendance->fresh();
     }
 
-    /**
-     * Prepare location signal respecting organization settings.
-     * Returns null values if location capture is disabled.
-     */
-    private function prepareLocationSignal(?array $locationSignal): array
-    {
-        // Check if organization allows location capture
-        if (!OrganizationSetting::isLocationCaptureEnabled()) {
-            return ['lat' => null, 'lng' => null, 'accuracy' => null];
-        }
-
-        if (!$locationSignal) {
-            return ['lat' => null, 'lng' => null, 'accuracy' => null];
-        }
-
-        return [
-            'lat' => $locationSignal['lat'] ?? null,
-            'lng' => $locationSignal['lng'] ?? null,
-            'accuracy' => $locationSignal['accuracy'] ?? 'unknown',
-        ];
-    }
 
     /**
      * Check if user has an active session.
@@ -161,7 +132,7 @@ class AttendanceService
             'schedule' => $schedule 
                 ? "{$schedule->formatted_start_time} - {$schedule->formatted_end_time}"
                 : '08:00 - 16:30',
-            'cluster' => $attendance?->cluster ?? 'N/A',
+            'stationName' => $attendance?->station_name ?? 'N/A',
             'workMode' => $attendance?->work_mode ?? 'office',
         ];
     }
@@ -306,10 +277,10 @@ class AttendanceService
     }
 
     /**
-     * Generate a random cluster identifier.
+     * Generate a random station name identifier.
      */
-    private function generateCluster(): string
+    private function generateStationName(): string
     {
-        return 'Node-'.str_pad((string) random_int(1, 12), 2, '0', STR_PAD_LEFT);
+        return 'Station-'.str_pad((string) random_int(1, 12), 2, '0', STR_PAD_LEFT);
     }
 }

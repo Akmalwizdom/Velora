@@ -18,7 +18,7 @@ class Attendance extends Model
         'checked_in_at',
         'checked_out_at',
         'work_mode',
-        'cluster',
+        'station_name',
         'note',
         'status',
         'device_type',

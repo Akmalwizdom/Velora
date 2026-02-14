@@ -77,8 +77,6 @@ export default function QrScanner({ onSuccess, onClose, className }: QrScannerPr
         try {
             const response = await axios.post('/qr/validate', {
                 token: decodedText,
-                // Optional: add lightweight location if permission already granted
-                ...(await getLightweightLocation())
             });
 
             if (response.data.success) {
@@ -108,28 +106,6 @@ export default function QrScanner({ onSuccess, onClose, className }: QrScannerPr
         // Silently ignore failures during scanning as it's common (blur, glare)
     };
 
-    const getLightweightLocation = async () => {
-        try {
-            if ('geolocation' in navigator) {
-                const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
-                        timeout: 5000,
-                        maximumAge: 60000,
-                        enableHighAccuracy: false // Fast over accurate
-                    });
-                });
-                
-                return {
-                    location_lat: pos.coords.latitude,
-                    location_lng: pos.coords.longitude,
-                    location_accuracy: pos.coords.accuracy <= 50 ? 'high' : 'medium'
-                };
-            }
-        } catch (e) {
-            // Ignore if blocked - security is server-side
-        }
-        return {};
-    };
 
     return (
         <div className={cn("fixed inset-0 z-[100] bg-background-dark/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 animate-in fade-in duration-300", className)}>

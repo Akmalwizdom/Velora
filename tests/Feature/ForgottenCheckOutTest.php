@@ -25,7 +25,7 @@ test('auto-closure command closes sessions from previous days', function () {
         'checked_in_at' => $yesterday,
         'work_mode' => 'office',
         'status' => 'on_time',
-        'cluster' => 'Node-01'
+        'station_name' => 'Node-01'
     ]);
 
     $this->artisan('attendance:close-stale-sessions')
@@ -33,7 +33,6 @@ test('auto-closure command closes sessions from previous days', function () {
         ->assertExitCode(0);
 
     $attendance->refresh();
-    dd(\Illuminate\Support\Facades\DB::table('attendances')->where('id', $attendance->id)->first());
     expect($attendance->checked_out_at)->not->toBeNull();
     expect($attendance->checked_out_at->toDateTimeString())->toBe($yesterday->copy()->endOfDay()->toDateTimeString());
 });
@@ -48,7 +47,7 @@ test('check-in is blocked by stale session with descriptive message', function (
         'checked_in_at' => $yesterday,
         'work_mode' => 'office',
         'status' => 'on_time',
-        'cluster' => 'Node-01'
+        'station_name' => 'Node-01'
     ]);
 
     $response = $this->actingAs($user)->post(route('attendance.check-in'));
@@ -66,7 +65,7 @@ test('user can request check-out correction', function () {
         'checked_out_at' => now()->addHours(8),
         'work_mode' => 'office',
         'status' => 'on_time',
-        'cluster' => 'Node-01'
+        'station_name' => 'Node-01'
     ]);
 
     $response = $this->actingAs($user)

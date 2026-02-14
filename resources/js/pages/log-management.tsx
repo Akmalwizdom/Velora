@@ -167,7 +167,7 @@ export default function LogManagement({
                     <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-4 md:gap-6 custom-scrollbar">
                         <ReasoningCard 
                             title="Proximity Context" 
-                            desc="System telemetry suggests the user was active near Team Cluster Node-04 at the time of the requested adjustment." 
+                            desc="System telemetry suggests the user was active near QR Station 04 at the time of the requested adjustment." 
                             active 
                         />
                         <ReasoningCard 

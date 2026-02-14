@@ -27,7 +27,7 @@ export interface AttendanceHubProps {
         status: 'on_time' | 'late' | 'not_checked_in';
         checkedInAt: string | null;
         schedule: string;
-        cluster: string;
+        stationName: string;
         workMode: 'office' | 'remote' | 'hybrid' | 'business_trip';
     };
     qrMode: QrMode;
@@ -106,7 +106,6 @@ export interface DailyLogEntry {
     checkIn: string;
     checkOut: string | null;
     status: string;
-    location: string;
 }
 
 export interface PulseFeedItem {

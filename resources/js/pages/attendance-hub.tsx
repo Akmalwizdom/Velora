@@ -39,7 +39,7 @@ interface PageProps extends AttendanceHubProps {}
 
 export default function AttendanceHub({
     sessionActive: initialSessionActive = false,
-    todayStatus = { status: 'not_checked_in', checkedInAt: null, schedule: '09:00 - 18:00', cluster: 'N/A', workMode: 'office' },
+    todayStatus = { status: 'not_checked_in', checkedInAt: null, schedule: '09:00 - 18:00', stationName: 'N/A', workMode: 'office' },
     weeklyProgress = { hoursWorked: 0, targetHours: 40, percentage: 0 },
     activeTeamMembers = { members: [], remainingCount: 0, totalActive: 0 },
     performanceData = { trend: 0, weeklyBars: [0, 0, 0, 0, 0, 0, 0] },
@@ -100,18 +100,7 @@ export default function AttendanceHub({
     const time = formatTime(elapsedTime);
 
     const handleStartSession = () => {
-        if (qrMode === 'required') {
-            setIsScannerOpen(true);
-            return;
-        }
-
-        // Use regular manual check-in if not required
-        post(checkIn.url(), {
-            onSuccess: () => {
-                setSessionActive(true);
-                setShowNote(true);
-            },
-        });
+        setIsScannerOpen(true);
     };
 
     const handleEndSession = () => {
@@ -197,8 +186,8 @@ export default function AttendanceHub({
                                         className="group relative px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-[0_10px_30px_rgba(19,200,236,0.3)] hover:shadow-[0_15px_40px_rgba(19,200,236,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:translate-y-0"
                                     >
                                         <div className="flex items-center gap-3">
-                                            {qrMode === 'required' ? <QrCode className="size-5" /> : <Play className="size-5 fill-current" />}
-                                            {qrMode === 'required' ? 'Mulai Presensi (QR)' : 'Check In'}
+                                            <QrCode className="size-5" />
+                                            Scan QR Station
                                             <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
                                         </div>
                                     </button>
@@ -216,22 +205,10 @@ export default function AttendanceHub({
                                     </button>
                                 )}
 
-                                {/* Fallback Manual Link for Mixed Modes */}
-                                {qrMode !== 'required' && !sessionActive && (
-                                    <button
-                                        onClick={() => post(checkIn.url())}
-                                        className="ml-4 mt-4 text-[10px] font-black uppercase tracking-widest text-muted-dynamics/40 hover:text-primary transition-colors"
-                                    >
-                                        Atau Check-In Manual
-                                    </button>
-                                )}
-
-                                {qrMode === 'required' && !sessionActive && (
-                                    <p className="mt-4 text-[9px] font-bold text-muted-dynamics/30 uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <Smartphone className="size-3" />
-                                        QR Scanner Diperlukan untuk Validasi
-                                    </p>
-                                )}
+                                <p className="mt-4 text-[9px] font-bold text-muted-dynamics/30 uppercase tracking-[0.2em] flex items-center gap-2">
+                                    <ShieldCheck className="size-3" />
+                                    QR Station Validation Required
+                                </p>
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-4 w-full max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -283,10 +260,10 @@ export default function AttendanceHub({
                     </div>
                     <div className="h-4 w-px bg-white/10" />
                     <div className="flex flex-col items-center gap-1">
-                        <span className="text-[9px] font-bold text-muted-dynamics/40 uppercase tracking-widest">Cluster</span>
+                        <span className="text-[9px] font-bold text-muted-dynamics/40 uppercase tracking-widest">Station</span>
                         <div className="flex items-center gap-1.5">
                             <MapPin className="size-3 text-primary" />
-                            <span className="text-xs font-black text-white uppercase">{todayStatus.cluster}</span>
+                            <span className="text-xs font-black text-white uppercase">{todayStatus.stationName}</span>
                         </div>
                     </div>
                 </div>
