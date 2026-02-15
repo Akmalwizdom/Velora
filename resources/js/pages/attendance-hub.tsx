@@ -123,15 +123,15 @@ export default function AttendanceHub({
                 {/* Top Path / Breadcrumbs - Embedded in page for fidelity */}
                 <div className="absolute top-6 md:top-10 left-6 md:left-10 flex items-center gap-4">
                     <div className="flex flex-wrap gap-2 items-center">
-                        <span className="text-muted-dynamics/60 text-[10px] font-bold tracking-[0.2em] uppercase">HUB</span>
+                        <span className="text-muted-dynamics/60 text-[10px] font-bold tracking-[0.2em] uppercase">MENU</span>
                         <span className="text-white/10 text-[10px]">/</span>
-                        <span className="text-white text-[10px] font-bold tracking-[0.2em] uppercase">OVERVIEW</span>
+                        <span className="text-white text-[10px] font-bold tracking-[0.2em] uppercase">UTAMA</span>
                     </div>
                 </div>
                 <div className="absolute top-6 md:top-10 right-6 md:right-10">
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
                         <div className={cn('size-1.5 rounded-full animate-pulse shadow-[0_0_8px_rgba(19,200,236,0.5)]', sessionActive ? 'bg-primary' : 'bg-slate-500')}></div>
-                        <span className="text-[10px] font-bold tracking-widest text-muted-dynamics uppercase">{sessionActive ? 'Checked In' : 'Ready to Check In'}</span>
+                        <span className="text-[10px] font-bold tracking-widest text-muted-dynamics uppercase">{sessionActive ? 'Sudah Absen' : 'Siap Absen'}</span>
                     </div>
                 </div>
 
@@ -158,7 +158,7 @@ export default function AttendanceHub({
                     <div className="relative size-[280px] md:size-[410px] rounded-full flex flex-col items-center justify-center bg-background-dark/60 backdrop-blur-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                         <div className="flex flex-col items-center mb-4">
                             <Zap className="size-5 md:size-6 text-primary mb-2" />
-                            <p className="text-muted-dynamics text-[8px] md:text-[10px] font-bold tracking-[0.3em] uppercase">Work Hours</p>
+                            <p className="text-muted-dynamics text-[8px] md:text-[10px] font-bold tracking-[0.3em] uppercase">Jam Kerja</p>
                         </div>
 
                         {/* Main Timer Component */}
@@ -182,7 +182,7 @@ export default function AttendanceHub({
                                     >
                                         <div className="flex items-center gap-3">
                                             <QrCode className="size-5" />
-                                            Scan QR Station
+                                            Scan Station QR
                                             <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
                                         </div>
                                     </button>
@@ -202,14 +202,14 @@ export default function AttendanceHub({
 
                                 <p className="mt-4 text-[9px] font-bold text-muted-dynamics/30 uppercase tracking-[0.2em] flex items-center gap-2">
                                     <ShieldCheck className="size-3" />
-                                    QR Station Validation Required
+                                    Wajib Scan QR di Station
                                 </p>
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-4 w-full max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="flex items-center gap-2 text-primary">
                                     <CheckCircle2 className="size-5" />
-                                    <span className="text-[10px] font-bold uppercase tracking-widest">Checked In Successfully</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Check-in Successful</span>
                                 </div>
                                 <input
                                     autoFocus
@@ -333,7 +333,7 @@ export default function AttendanceHub({
                 <div className="w-full max-w-[1100px] mt-8">
                     <div className="flex items-center justify-between mb-4">
                         <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase">
-                            Weekly Insights
+                            Statistik & Analisis
                         </span>
                         <button
                             onClick={() => setShowInsights(!showInsights)}
@@ -356,7 +356,7 @@ export default function AttendanceHub({
 
                 {/* Decorative Elements */}
                 <div className="hidden lg:block absolute bottom-10 left-10 text-[10px] font-bold tracking-[0.4em] text-white/10 uppercase vertical-text origin-bottom-left rotate-180">
-                    Velora Intelligence Interface
+                    Velora Station Interface
                 </div>
             </div>
         </DashboardLayout>
