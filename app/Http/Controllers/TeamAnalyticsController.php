@@ -13,13 +13,14 @@ class TeamAnalyticsController extends Controller
     ) {}
 
     /**
-     * Display the team analytics dashboard.
+     * Display the consolidated team dashboard.
      */
     public function index(): Response
     {
         $user = auth()->user();
+        $employeeMetrics = $this->teamAnalyticsService->getEmployeeDetailedMetrics($user);
 
-        return Inertia::render('team-analytics', [
+        return Inertia::render('dashboard', [
             'stats' => [
                 'presence' => $this->teamAnalyticsService->getPresencePercentage($user),
                 'activeNow' => $this->teamAnalyticsService->getActiveCount($user),
@@ -29,6 +30,13 @@ class TeamAnalyticsController extends Controller
             'activeMembers' => $this->teamAnalyticsService->getActiveMembers($user),
             'pulseFeed' => $this->teamAnalyticsService->getPulseFeed($user),
             'energyFlux' => $this->teamAnalyticsService->getEnergyFlux($user),
+            'employeeMetrics' => $employeeMetrics,
+            'teamSummary' => [
+                'avgPunctuality' => count($employeeMetrics) > 0 
+                    ? round(collect($employeeMetrics)->avg('punctuality.rate')) 
+                    : 0,
+                'totalEmployees' => count($this->teamAnalyticsService->getScopedUsersQuery($user)->get()),
+            ]
         ]);
     }
 }

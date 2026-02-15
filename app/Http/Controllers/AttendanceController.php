@@ -9,10 +9,13 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use App\Services\CorrectionService;
+
 class AttendanceController extends Controller
 {
     public function __construct(
-        protected AttendanceService $attendanceService
+        protected AttendanceService $attendanceService,
+        protected CorrectionService $correctionService
     ) {}
 
     /**
@@ -34,6 +37,20 @@ class AttendanceController extends Controller
             'attendanceMetrics' => $metrics,
             'qrMode' => OrganizationSetting::getQrMode(),
             'qrTtl' => OrganizationSetting::getQrTtlSeconds(),
+        ]);
+    }
+
+    /**
+     * Display the authenticated user's personal attendance history and corrections.
+     */
+    public function myAttendance(): Response
+    {
+        $user = auth()->user();
+
+        return Inertia::render('my-attendance', [
+            'attendanceHistory' => $this->attendanceService->getMyAttendanceHistory($user),
+            'corrections' => $this->correctionService->getUserCorrections($user),
+            'monthlyStats' => $this->attendanceService->getMyMonthlyStats($user),
         ]);
     }
 

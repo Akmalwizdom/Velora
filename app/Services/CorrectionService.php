@@ -221,4 +221,61 @@ class CorrectionService
             'status' => 'pending',
         ]);
     }
+    /**
+     * Get all corrections for the administrative list view.
+     */
+    public function getAllCorrectionsForList(User $user): Collection
+    {
+        $query = AttendanceCorrection::with(['attendance.user', 'requester', 'reviewer'])
+            ->latest();
+
+        if ($user->isManager()) {
+            $query->whereHas('requester.teams', function ($q) use ($user) {
+                $q->whereIn('teams.id', $user->teams->pluck('id'));
+            });
+        }
+
+        return $query->get()->map(fn ($c) => [
+            'id' => $c->id,
+            'requestCode' => 'REQ-' . str_pad($c->id, 5, '0', STR_PAD_LEFT),
+            'originalTime' => $c->original_time?->format('H:i') ?? '--:--',
+            'proposedTime' => $c->proposed_time->format('H:i'),
+            'reason' => $c->reason,
+            'status' => $c->status,
+            'requester' => [
+                'id' => $c->requester->id,
+                'name' => $c->requester->name,
+                'avatar' => 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($c->requester->name),
+            ],
+            'reviewer' => $c->reviewer ? [
+                'id' => $c->reviewer->id,
+                'name' => $c->reviewer->name,
+            ] : null,
+            'submittedAt' => $c->created_at->format('d M, H:i'),
+            'reviewedAt' => $c->reviewed_at?->format('d M, H:i'),
+            'auditLog' => $this->getAuditLog($c->id),
+        ]);
+    }
+
+    /**
+     * Get corrections for a specific user's history.
+     */
+    public function getUserCorrections(User $user): array
+    {
+        return AttendanceCorrection::where('requested_by', $user->id)
+            ->with('reviewer')
+            ->latest()
+            ->get()
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'type' => $c->type,
+                'originalTime' => $c->original_time?->format('H:i'),
+                'proposedTime' => $c->proposed_time->format('H:i'),
+                'reason' => $c->reason,
+                'status' => $c->status,
+                'submittedAt' => $c->created_at->format('d M Y, H:i'),
+                'reviewedAt' => $c->reviewed_at?->format('d M Y, H:i'),
+                'reviewerName' => $c->reviewer?->name,
+            ])->toArray();
+    }
 }

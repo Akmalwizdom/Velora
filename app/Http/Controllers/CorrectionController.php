@@ -15,20 +15,17 @@ class CorrectionController extends Controller
     ) {}
 
     /**
-     * Display the log management / corrections page.
+     * Display the administrative corrections list.
      */
     public function index(): Response
     {
         $user = auth()->user();
-        $correction = $this->correctionService->getCurrentCorrection($user);
-        $auditLog = $correction
-            ? $this->correctionService->getAuditLog($correction['id'])
-            : [];
+        $corrections = $this->correctionService->getAllCorrectionsForList($user);
+        $totalPending = collect($corrections)->where('status', 'pending')->count();
 
         return Inertia::render('log-management', [
-            'correction' => $correction,
-            'auditLog' => $auditLog,
-            'hasCorrection' => $correction !== null,
+            'corrections' => $corrections,
+            'totalPending' => $totalPending,
         ]);
     }
 

@@ -275,6 +275,59 @@ class AttendanceService
     }
 
     /**
+     * Get attendance history for the authenticated user.
+     */
+    public function getMyAttendanceHistory(User $user): array
+    {
+        $records = Attendance::where('user_id', $user->id)
+            ->latest('checked_in_at')
+            ->limit(50) // Recent 50 records
+            ->get();
+
+        return $records->map(fn ($record) => [
+            'id' => $record->id,
+            'date' => $record->checked_in_at->format('d M Y'),
+            'checkIn' => $record->checked_in_at->format('H:i'),
+            'checkOut' => $record->checked_out_at?->format('H:i'),
+            'hoursWorked' => round($record->duration_hours, 1),
+            'status' => $record->status,
+            'stationName' => $record->station_name,
+        ])->toArray();
+    }
+
+    /**
+     * Get monthly statistics for the authenticated user.
+     */
+    public function getMyMonthlyStats(User $user): array
+    {
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+        $limit = now()->isBefore($endOfMonth) ? now()->endOfDay() : $endOfMonth;
+
+        $records = Attendance::where('user_id', $user->id)
+            ->whereBetween('checked_in_at', [$startOfMonth, $endOfMonth])
+            ->get();
+
+        $presentDays = $records->unique(fn ($r) => $r->checked_in_at->format('Y-m-d'))->count();
+        $lateDays = $records->where('status', 'late')->unique(fn ($r) => $r->checked_in_at->format('Y-m-d'))->count();
+        
+        $totalWorkingDays = $startOfMonth->diffInDaysFiltered(function ($date) {
+            return $date->isWeekday();
+        }, $limit) + ($startOfMonth->isWeekday() ? 1 : 0);
+
+        $absentDays = max(0, $totalWorkingDays - $presentDays);
+        $avgHoursAtOffice = $records->count() > 0 ? round($records->avg('duration_hours'), 1) : 0;
+
+        return [
+            'totalDays' => $totalWorkingDays,
+            'presentDays' => $presentDays,
+            'lateDays' => $lateDays,
+            'absentDays' => $absentDays,
+            'avgHoursPerDay' => $avgHoursAtOffice,
+        ];
+    }
+
+    /**
      * Generate a random station name identifier.
      */
     private function generateStationName(): string

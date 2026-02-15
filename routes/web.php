@@ -6,7 +6,6 @@ use App\Http\Controllers\InsightsController;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\QrAttendanceController;
 use App\Http\Controllers\TeamAnalyticsController;
-use App\Http\Controllers\TeamPerformanceController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +28,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::get('attendance-hub', [AttendanceController::class, 'hub'])->name('attendance-hub');
     Route::post('attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
     Route::post('attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.check-out');
+    Route::get('my-attendance', [AttendanceController::class, 'myAttendance'])->name('my-attendance');
     Route::get('performance', [PerformanceController::class, 'index'])->name('performance');
     Route::post('corrections', [CorrectionController::class, 'store'])->name('corrections.store');
 
@@ -39,12 +39,10 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         Route::post('refresh-snapshot', [InsightsController::class, 'refreshSnapshot'])->name('refresh-snapshot');
     });
 
-    // Manager and Admin: Team analytics & dashboard (read access)
+    // Manager and Admin: Team analytics & dashboard
     Route::middleware('role:manager,admin')->group(function () {
         Route::get('dashboard', [TeamAnalyticsController::class, 'index'])->name('dashboard');
-        Route::get('team-analytics', [TeamAnalyticsController::class, 'index'])->name('team-analytics');
-        Route::get('team-performance', [TeamPerformanceController::class, 'index'])->name('team-performance');
-        Route::get('log-management', [CorrectionController::class, 'index'])->name('log-management');
+        Route::get('corrections', [CorrectionController::class, 'index'])->name('corrections.index');
     });
 
     // Manager only: Operational actions (separation of duties - Admin cannot approve)

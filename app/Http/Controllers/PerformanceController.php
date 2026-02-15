@@ -33,20 +33,10 @@ class PerformanceController extends Controller
         // Get active hours today
         $activeHours = $todayAttendance?->getDurationInHours() ?? 0;
 
-        // Get current work mode
-        $workMode = $todayAttendance?->work_mode === 'remote' ? 'Remote Work' : 'Deep Focus';
-
-        // Get recent activity
-        $recentActivity = $this->getRecentActivity($user);
-
-        // Get weekly pattern data
-        $weeklyPattern = $this->attendanceService->getPerformanceData($user)['weeklyBars'];
-
         return Inertia::render('performance-dashboard', [
             'attendanceState' => $attendanceState,
             'attendanceStatus' => ucfirst(str_replace('_', ' ', $attendanceStatus)),
             'activeHours' => round($activeHours, 1),
-            'workMode' => $workMode,
             'recentActivity' => $recentActivity,
             'weeklyPattern' => $weeklyPattern,
         ]);

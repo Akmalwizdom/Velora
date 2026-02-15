@@ -33,7 +33,6 @@ export default function PerformanceDashboard({
     attendanceState = 'Not Checked In',
     attendanceStatus = 'Pending',
     activeHours = 0,
-    workMode = 'Deep Focus',
     recentActivity = [],
     weeklyPattern = [30, 60, 45, 90, 100, 20, 10]
 }: PageProps) {
@@ -61,11 +60,6 @@ export default function PerformanceDashboard({
                                 <p className="text-[10px] font-black text-muted-dynamics/60 uppercase tracking-widest mb-1">Active Hours</p>
                                 <p className="text-2xl font-black text-white">{activeHours}h</p>
                                 <p className="text-[10px] text-muted-dynamics/40 font-bold mt-1 uppercase">Today</p>
-                            </div>
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                                <p className="text-[10px] font-black text-muted-dynamics/60 uppercase tracking-widest mb-1">Work Mode</p>
-                                <p className="text-2xl font-black text-white">{workMode}</p>
-                                <p className="text-[10px] text-muted-dynamics/40 font-bold mt-1 uppercase">Current</p>
                             </div>
                         </div>
 
@@ -96,15 +90,6 @@ export default function PerformanceDashboard({
 
                 {/* Performance Context Sidebar */}
                 <aside className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-white/5 bg-background-dark flex flex-col shrink-0">
-                    <div className="p-6 md:p-8 border-b border-white/5 bg-header-background/50 ring-1 ring-inset ring-white/[0.02]">
-                        <p className="text-[10px] font-bold text-muted-dynamics/60 uppercase tracking-[0.3em] mb-6">Work Mode Selection</p>
-                        <div className="flex flex-col gap-2">
-                            <ModeButton label="Deep Focus" icon={<Zap className="size-4" />} active />
-                            <ModeButton label="Collaboration" icon={<Users className="size-4" />} />
-                            <ModeButton label="Recharge / Away" icon={<Coffee className="size-4" />} />
-                        </div>
-                    </div>
-                    
                     <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 custom-scrollbar">
                         {/* Weekly Pattern Breakdown */}
                         <div className="flex flex-col gap-4">
