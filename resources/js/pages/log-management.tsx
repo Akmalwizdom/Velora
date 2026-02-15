@@ -47,25 +47,25 @@ export default function LogManagement({
 
     const isProcessing = approveForm.processing || rejectForm.processing;
     return (
-        <DashboardLayout title="Compliance & Trust">
+        <DashboardLayout title="Riwayat & Koreksi">
             <div className="flex flex-col lg:flex-row h-full min-h-0 overflow-hidden">
                 {/* Main Compliance View */}
                 <div className="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto custom-scrollbar">
                     {/* Breadcrumbs */}
                     <div className="flex items-center gap-2 mb-6 md:mb-8 text-[10px] font-bold tracking-[0.2em] uppercase">
-                        <span className="text-muted-dynamics/60">COMPLIANCE</span>
+                        <span className="text-muted-dynamics/60">RIWAYAT</span>
                         <ChevronRight className="size-3 text-white/10" />
-                        <span className="text-muted-dynamics/60">LOG AUDIT</span>
+                        <span className="text-muted-dynamics/60">AUDIT LOG</span>
                         <ChevronRight className="size-3 text-white/10" />
-                        <span className="text-white">{correction ? correction.requestCode : 'NO_REQUEST'}</span>
+                        <span className="text-white">{correction ? correction.requestCode : 'TANPA_REQUEST'}</span>
                     </div>
 
                     <div className="flex flex-col gap-8">
                         {/* Summary Header */}
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                             <div>
-                                <h1 className="text-3xl md:text-4xl font-black text-white mb-2">Correction & Trust Center</h1>
-                                <p className="text-muted-dynamics text-base md:text-lg">Cross-referencing telemetry with manual adjustment requests.</p>
+                                <h1 className="text-3xl md:text-4xl font-black text-white mb-2">Pusat Koreksi Absensi</h1>
+                                <p className="text-muted-dynamics text-base md:text-lg">Membandingkan data sistem dengan permintaan penyesuaian manual.</p>
                             </div>
                             <label className="h-12 md:h-14 px-4 md:px-6 rounded-xl bg-white/5 border border-white/5 flex items-center gap-4 focus-within:border-primary/30 transition-all cursor-text">
                                 <Search className="size-5 text-muted-dynamics" />
@@ -78,7 +78,7 @@ export default function LogManagement({
                             {/* Original State */}
                             <div className="rounded-2xl border border-white/5 bg-header-background/40 overflow-hidden flex flex-col transition-all">
                                 <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-                                    <span className="text-[10px] font-black tracking-widest text-muted-dynamics uppercase">Original Log State</span>
+                                    <span className="text-[10px] font-black tracking-widest text-muted-dynamics uppercase">Data Asli</span>
                                     <div className="flex gap-1">
                                         <div className="size-1.5 rounded-full bg-white/20"></div>
                                         <div className="size-1.5 rounded-full bg-white/20"></div>
@@ -93,8 +93,8 @@ export default function LogManagement({
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2 items-center text-center">
-                                        <p className="text-[10px] md:text-xs font-bold text-muted-dynamics/60 uppercase tracking-widest leading-none">Status: Immutable</p>
-                                        <p className="text-[9px] md:text-[10px] text-muted-dynamics/40 font-medium">Auto-synced via Mesh Network</p>
+                                        <p className="text-[10px] md:text-xs font-bold text-muted-dynamics/60 uppercase tracking-widest leading-none">Status: Tetap</p>
+                                        <p className="text-[9px] md:text-[10px] text-muted-dynamics/40 font-medium">Sinkronisasi otomatis</p>
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +146,7 @@ export default function LogManagement({
                                         disabled={isProcessing}
                                         className="flex-1 md:flex-none px-6 md:px-10 py-3 rounded-xl bg-primary text-background-dark hover:shadow-[0_0_25px_rgba(19,200,236,0.3)] transition-all text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50"
                                     >
-                                        {approveForm.processing ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Accept & Commit
+                                        {approveForm.processing ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Setujui & Simpan
                                     </button>
                                 </div>
                             </div>
