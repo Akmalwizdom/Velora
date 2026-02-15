@@ -25,7 +25,7 @@ export function AppSidebar() {
         ...(role === 'admin' || role === 'manager'
             ? [
                   {
-                      title: 'QR Station',
+                      title: 'Station Absensi',
                       href: '/qr/display',
                       icon: Monitor,
                   },
@@ -33,13 +33,13 @@ export function AppSidebar() {
             : []),
         // 2. Attendance Hub (Scanner)
         {
-            title: 'Attendance',
+            title: 'Absensi',
             href: '/attendance-hub',
             icon: Zap,
         },
         // 3. Analytics & Overview
         {
-            title: 'Overview',
+            title: 'Dashboard',
             href: '/team-analytics',
             icon: LayoutGrid,
         },
@@ -50,7 +50,7 @@ export function AppSidebar() {
         },
         // 4. Compliance & Personal
         {
-            title: 'Compliance',
+            title: 'Riwayat',
             href: '/log-management',
             icon: Shield,
         },
