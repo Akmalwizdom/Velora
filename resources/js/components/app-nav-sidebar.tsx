@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/react';
-import { HelpCircle, LayoutGrid, Settings, Shield, User, Zap, Users, Clock, TrendingUp, Monitor } from 'lucide-react';
+import { LayoutGrid, Settings, Zap, Users, Clock, Monitor, ClipboardCheck, CalendarDays } from 'lucide-react';
 import React from 'react';
 import {
     Sidebar,
@@ -13,48 +13,40 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 
-// navItems moved inside component to support role-based logic
-
-const bottomItems = [
-    { name: 'Settings', icon: Settings, href: '/settings' },
-    { name: 'Help', icon: HelpCircle, href: '/help' },
-];
-
 export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
     const { url, props } = usePage();
     const auth = props.auth as any;
     const role = auth?.user?.role_name;
     const { state, isMobile } = useSidebar();
 
+    const isManagerOrAdmin = role === 'admin' || role === 'manager';
+
     const filteredNavItems = [
-        // 1. QR Station (ALWAYS VISIBLE FOR DEBUGGING)
-        {
-            name: 'QR Station',
-            href: '/qr/display',
-            icon: Monitor,
-        },
-        // 2. Main Navigation
-        { name: 'Overview', icon: LayoutGrid, href: '/team-analytics' },
-        { name: 'Team Performance', icon: TrendingUp, href: '/team-performance' },
-        { name: 'Attendance', icon: Zap, href: '/attendance-hub' },
-        { name: 'Compliance', icon: Shield, href: '/log-management' },
-        { name: 'Performance', icon: User, href: '/performance' },
-        // 3. Admin Management
+        // QR Station — admin/manager only
+        ...(isManagerOrAdmin
+            ? [{ name: 'Station Absensi', href: '/qr/display', icon: Monitor }]
+            : []),
+        // Absensi — all roles
+        { name: 'Absensi', icon: Zap, href: '/attendance-hub' },
+        // Dashboard — admin/manager only
+        ...(isManagerOrAdmin
+            ? [{ name: 'Dashboard', icon: LayoutGrid, href: '/dashboard' }]
+            : []),
+        // Kehadiran Saya — all roles
+        { name: 'Kehadiran Saya', icon: CalendarDays, href: '/my-attendance' },
+        // Koreksi — admin/manager only
+        ...(isManagerOrAdmin
+            ? [{ name: 'Koreksi', icon: ClipboardCheck, href: '/corrections' }]
+            : []),
+        // Admin Management
         ...(role === 'admin'
             ? [
-                  {
-                      name: 'User Management',
-                      href: '/admin/users',
-                      icon: Users,
-                  },
-                  {
-                      name: 'Work Schedules',
-                      href: '/admin/work-schedules',
-                      icon: Clock,
-                  },
+                  { name: 'Kelola Pengguna', href: '/admin/users', icon: Users },
+                  { name: 'Jadwal Kerja', href: '/admin/work-schedules', icon: Clock },
               ]
             : []),
     ];
+
     const isCollapsed = state === 'collapsed' && !isMobile;
 
     return (
@@ -66,8 +58,8 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
                     </div>
                     {state === 'expanded' && (
                         <div className="flex flex-col overflow-hidden animate-in fade-in slide-in-from-left-2 duration-300">
-                            <h1 className="text-white text-base font-bold leading-tight uppercase tracking-tight truncate">Dynamics Hub</h1>
-                            <p className="text-muted-dynamics text-xs font-normal truncate">Remote HQ (Debug)</p>
+                            <h1 className="text-white text-base font-bold leading-tight uppercase tracking-tight truncate">Velora</h1>
+                            <p className="text-muted-dynamics text-xs font-normal truncate">Attendance System</p>
                         </div>
                     )}
                 </div>
@@ -102,34 +94,22 @@ export function AppNavSidebar({ slim = false }: { slim?: boolean }) {
             </SidebarContent>
 
             <SidebarFooter className={cn('p-4 flex flex-col gap-4 transition-all duration-300', isCollapsed && 'px-2 py-4')}>
-                {state === 'expanded' && (
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5 mx-2 animate-in fade-in zoom-in-95 duration-300">
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-dynamics mb-2 font-black">System Status</p>
-                        <div className="flex items-center gap-2">
-                            <div className="size-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(19,200,236,0.6)]"></div>
-                            <p className="text-xs text-white font-bold">Streaming Updates</p>
-                        </div>
-                    </div>
-                )}
-                
                 <SidebarMenu className={cn('gap-1 border-t border-white/5 pt-4', isCollapsed && 'items-center')}>
-                    {bottomItems.map((item) => (
-                        <SidebarMenuItem key={item.name}>
-                            <SidebarMenuButton
-                                asChild
-                                tooltip={item.name}
-                                className={cn(
-                                    "h-12 px-3 text-muted-dynamics hover:bg-white/5 hover:text-white rounded-lg focus-visible:ring-2 focus-visible:ring-primary outline-none translate-x-1",
-                                    isCollapsed && "translate-x-0 mx-auto px-0 justify-center h-12 w-12"
-                                )}
-                            >
-                                <Link href={item.href} className="flex items-center gap-3">
-                                    <item.icon className="size-7 shrink-0" />
-                                    {state === 'expanded' && <span className="text-[10px] font-bold uppercase tracking-widest animate-in fade-in slide-in-from-left-2 duration-300">{item.name}</span>}
-                                </Link>
-                            </SidebarMenuButton>
-                                                      </SidebarMenuItem>
-                    ))}
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            asChild
+                            tooltip="Settings"
+                            className={cn(
+                                "h-12 px-3 text-muted-dynamics hover:bg-white/5 hover:text-white rounded-lg focus-visible:ring-2 focus-visible:ring-primary outline-none translate-x-1",
+                                isCollapsed && "translate-x-0 mx-auto px-0 justify-center h-12 w-12"
+                            )}
+                        >
+                            <Link href="/settings" className="flex items-center gap-3">
+                                <Settings className="size-7 shrink-0" />
+                                {state === 'expanded' && <span className="text-[10px] font-bold uppercase tracking-widest animate-in fade-in slide-in-from-left-2 duration-300">Settings</span>}
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>
         </Sidebar>
