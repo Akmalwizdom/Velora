@@ -51,13 +51,6 @@ class OrganizationSetting extends Model
         Cache::forget("org_setting:{$key}");
     }
 
-    /**
-     * Check if location capture is enabled for this organization.
-     */
-    public static function isLocationCaptureEnabled(): bool
-    {
-        return static::get('tracking.location_capture_enabled', false);
-    }
 
     /**
      * Check if device type capture is enabled.
@@ -67,13 +60,6 @@ class OrganizationSetting extends Model
         return static::get('tracking.device_type_capture_enabled', true);
     }
 
-    /**
-     * Get available work modes.
-     */
-    public static function getWorkModes(): array
-    {
-        return static::get('attendance.work_modes', ['office', 'remote', 'hybrid', 'business_trip']);
-    }
 
     /**
      * Get the current QR attendance mode.

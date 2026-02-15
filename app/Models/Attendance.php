@@ -22,17 +22,12 @@ class Attendance extends Model
         'note',
         'status',
         'device_type',
-        'location_lat',
-        'location_lng',
-        'location_accuracy',
         'validation_method',
     ];
 
     protected $casts = [
         'checked_in_at' => 'datetime',
         'checked_out_at' => 'datetime',
-        'location_lat' => 'decimal:8',
-        'location_lng' => 'decimal:8',
     ];
 
     // Relationships
