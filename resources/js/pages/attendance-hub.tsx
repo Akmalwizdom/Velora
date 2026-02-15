@@ -30,9 +30,6 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 import type { AttendanceHubProps } from '@/types/attendance';
-import { WeeklyRhythmPanel } from '@/components/ui/weekly-rhythm-panel';
-import { BehavioralInsightsPanel } from '@/components/ui/behavioral-insights-panel';
-import { checkIn, checkOut } from '@/routes/attendance';
 
 
 interface PageProps extends AttendanceHubProps {}
@@ -57,7 +54,6 @@ export default function AttendanceHub({
     const [elapsedTime, setElapsedTime] = useState(0);
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isScannerOpen, setIsScannerOpen] = useState(false);
-    const [showInsights, setShowInsights] = useState(false); // Toggle for insights panel
 
     // Forms for check-in/out
     const { post, processing, data, setData } = useForm({ note: '' });
@@ -327,31 +323,6 @@ export default function AttendanceHub({
                             <p className="text-muted-dynamics text-[9px] md:text-[10px] uppercase font-bold tracking-tighter mt-2">Terdeteksi Terlambat Bulan Ini</p>
                         </div>
                     </HubStatCard>
-                </div>
-
-                {/* Weekly Rhythm & Insights Section */}
-                <div className="w-full max-w-[1100px] mt-8">
-                    <div className="flex items-center justify-between mb-4">
-                        <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase">
-                            Statistik & Analisis
-                        </span>
-                        <button
-                            onClick={() => setShowInsights(!showInsights)}
-                            className="text-[10px] font-bold text-muted-dynamics hover:text-primary transition-colors uppercase tracking-wide"
-                        >
-                            {showInsights ? 'Hide Details' : 'Show Details'}
-                        </button>
-                    </div>
-                    
-                    <div className={cn(
-                        'grid gap-6 transition-all duration-500',
-                        showInsights ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'
-                    )}>
-                        <WeeklyRhythmPanel className="w-full" />
-                        {showInsights && (
-                            <BehavioralInsightsPanel className="w-full animate-in fade-in slide-in-from-right-4 duration-300" />
-                        )}
-                    </div>
                 </div>
 
                 {/* Decorative Elements */}

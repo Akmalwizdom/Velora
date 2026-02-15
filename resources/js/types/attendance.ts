@@ -8,7 +8,7 @@ export interface TeamMember {
     name: string;
     avatar: string;
     time?: string;
-    status?: 'late' | 'remote' | 'active' | 'away';
+    status?: 'late' | 'active' | 'away' | 'absent';
 }
 
 export type QrMode = 'required' | 'optional' | 'hybrid';
@@ -20,7 +20,7 @@ export interface QrSessionData {
     ttl: number;
 }
 
-// Attendance Hub Props
+// Attendance Hub Props (Absensi page)
 export interface AttendanceHubProps {
     sessionActive: boolean;
     todayStatus: {
@@ -28,7 +28,6 @@ export interface AttendanceHubProps {
         checkedInAt: string | null;
         schedule: string;
         stationName: string;
-        workMode: 'office' | 'remote' | 'hybrid' | 'business_trip';
     };
     qrMode: QrMode;
     weeklyProgress: {
@@ -60,16 +59,15 @@ export interface AttendanceHubProps {
     };
 }
 
-// Team Analytics Props
+// Team Analytics / Dashboard Props
 export interface TeamAnalyticsProps {
     stats: {
         presence: number;
         activeNow: number;
-        remote: number;
         lateAbsent: number;
     };
     lateMembers: TeamMember[];
-    remoteMembers: TeamMember[];
+    activeMembers: TeamMember[];
     pulseFeed: PulseFeedItem[];
     energyFlux: number[];
 }
@@ -116,12 +114,11 @@ export interface PulseFeedItem {
     members?: string[];
 }
 
-// Performance Dashboard Props
+// Performance Dashboard / Kehadiran Saya Props
 export interface PerformanceDashboardProps {
     attendanceState: string;
     attendanceStatus: string;
     activeHours: number;
-    workMode: string;
     recentActivity: ActivityItem[];
     weeklyPattern: number[];
 }
@@ -134,11 +131,45 @@ export interface ActivityItem {
     icon: string;
 }
 
-// Log Management Props
+// My Attendance Props (Kehadiran Saya page)
+export interface MyAttendanceProps {
+    attendanceHistory: AttendanceRecord[];
+    corrections: CorrectionRecord[];
+    monthlyStats: {
+        totalDays: number;
+        presentDays: number;
+        lateDays: number;
+        absentDays: number;
+        avgHoursPerDay: number;
+    };
+}
+
+export interface AttendanceRecord {
+    id: number;
+    date: string;
+    checkIn: string | null;
+    checkOut: string | null;
+    hoursWorked: number;
+    status: 'on_time' | 'late' | 'absent' | 'correction';
+    stationName: string | null;
+}
+
+export interface CorrectionRecord {
+    id: number;
+    type: 'check_out' | 'check_in' | 'both';
+    originalTime: string | null;
+    proposedTime: string;
+    reason: string;
+    status: 'pending' | 'approved' | 'rejected';
+    submittedAt: string;
+    reviewedAt: string | null;
+    reviewerName: string | null;
+}
+
+// Log Management / Koreksi Props
 export interface LogManagementProps {
-    correction: CorrectionData | null;
-    auditLog: AuditLogItem[];
-    hasCorrection: boolean;
+    corrections: CorrectionData[];
+    totalPending: number;
 }
 
 export interface CorrectionData {
@@ -151,6 +182,7 @@ export interface CorrectionData {
     requester: {
         id: number;
         name: string;
+        avatar?: string;
     };
     reviewer: {
         id: number;
@@ -158,6 +190,7 @@ export interface CorrectionData {
     } | null;
     submittedAt: string;
     reviewedAt: string | null;
+    auditLog: AuditLogItem[];
 }
 
 export interface AuditLogItem {
