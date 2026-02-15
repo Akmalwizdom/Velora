@@ -63,12 +63,12 @@ export default function QrDisplay({ initialSession, className }: QrDisplayProps)
                         isLive ? "bg-primary animate-pulse shadow-[0_0_10px_rgba(19,200,236,0.6)]" : "bg-destructive shadow-[0_0_10px_rgba(239,68,68,0.6)]"
                     )} />
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">
-                        {isLive ? 'Encrypted Presence Link Active' : 'Offline - Reconnecting'}
+                        {isLive ? 'QR Absensi Aktif' : 'Offline - Menghubungkan Kembali'}
                     </span>
                     <ShieldCheck className="size-3 text-primary/50" />
                 </div>
                 <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase max-w-2xl leading-tight">
-                    Scan to Validate <span className="text-primary">Presence</span>
+                    Pindai untuk <span className="text-primary">Presensi</span>
                 </h1>
             </div>
 
@@ -135,7 +135,7 @@ export default function QrDisplay({ initialSession, className }: QrDisplayProps)
             <div className="flex flex-col items-center gap-6">
                 <div className="flex items-center gap-4 text-white/30 text-[10px] font-black uppercase tracking-[0.5em]">
                     <div className="h-px w-24 bg-current" />
-                    <span>Secure Arrival Ritual</span>
+                    <span>Absensi Masuk & Pulang</span>
                     <div className="h-px w-24 bg-current" />
                 </div>
                 
@@ -143,15 +143,15 @@ export default function QrDisplay({ initialSession, className }: QrDisplayProps)
                     <div className="flex items-center gap-3">
                         <Zap className="size-5 text-primary" />
                         <div className="flex flex-col">
-                            <span className="text-white text-xs font-black uppercase">Instant</span>
-                            <span className="text-white/40 text-[9px] font-bold uppercase tracking-widest">Sub-2s Flow</span>
+                            <span className="text-white text-xs font-black uppercase">Absensi Instan</span>
+                            <span className="text-white/40 text-[9px] font-bold uppercase tracking-widest">Mudah & Cepat</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <ShieldCheck className="size-5 text-primary" />
                         <div className="flex flex-col">
-                            <span className="text-white text-xs font-black uppercase">Dynamic</span>
-                            <span className="text-white/40 text-[9px] font-bold uppercase tracking-widest">30s TTL Cycle</span>
+                            <span className="text-white text-xs font-black uppercase">Dinamis</span>
+                            <span className="text-white/40 text-[9px] font-bold uppercase tracking-widest">Kode diperbarui tiap 30dtk</span>
                         </div>
                     </div>
                 </div>

@@ -11,7 +11,7 @@ interface QrScannerProps {
 }
 
 /**
- * High-performance QR presence validation scanner.
+ * High-performance QR check-in scanner.
  * 
  * UX Contract:
  * - Instant camera launch on mount
@@ -93,7 +93,7 @@ export default function QrScanner({ onSuccess, onClose, className }: QrScannerPr
                 }, 800);
             }
         } catch (err: any) {
-            console.error("Validation error:", err);
+            console.error("Check-in error:", err);
             setError(err.response?.data?.message || "Invalid QR code. Please scan again.");
             setIsValidating(false);
             
@@ -118,8 +118,8 @@ export default function QrScanner({ onSuccess, onClose, className }: QrScannerPr
 
             <div className="w-full max-w-sm flex flex-col items-center gap-8">
                 <div className="text-center">
-                    <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-2">Presence Validation</h2>
-                    <p className="text-muted-dynamics text-xs font-medium uppercase tracking-widest opacity-60">Scan the live QR code on the display</p>
+                    <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-2">Scan Presensi</h2>
+                    <p className="text-muted-dynamics text-xs font-medium uppercase tracking-widest opacity-60">Pindai kode QR yang ada di layar</p>
                 </div>
 
                 <div className="relative size-[280px] rounded-3xl overflow-hidden border border-white/10 bg-black/40 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
@@ -145,21 +145,21 @@ export default function QrScanner({ onSuccess, onClose, className }: QrScannerPr
                     {isInitializing && (
                         <div className="absolute inset-0 bg-background-dark/80 flex flex-col items-center justify-center gap-4 text-white">
                             <Loader2 className="size-8 text-primary animate-spin" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Waking Camera...</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Menyiapkan Kamera...</span>
                         </div>
                     )}
 
                     {isValidating && (
                         <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm flex flex-col items-center justify-center gap-4 text-white">
                             <Loader2 className="size-8 text-white animate-spin" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Validating Presence...</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Memproses Presensi...</span>
                         </div>
                     )}
 
                     {success && (
                         <div className="absolute inset-0 bg-green-500/90 backdrop-blur-sm flex flex-col items-center justify-center gap-4 text-white animate-in zoom-in-95 duration-300">
                             <CheckCircle2 className="size-16 text-white" />
-                            <span className="text-sm font-black uppercase tracking-[0.3em]">Presence Confirmed</span>
+                            <span className="text-sm font-black uppercase tracking-[0.3em]">Absensi Berhasil</span>
                         </div>
                     )}
                 </div>
@@ -174,7 +174,7 @@ export default function QrScanner({ onSuccess, onClose, className }: QrScannerPr
                 <div className="flex items-center gap-4 text-white/20">
                     <Camera className="size-4" />
                     <div className="h-px w-20 bg-current" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Velora Secure</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Velora Hub</span>
                     <div className="h-px w-20 bg-current" />
                 </div>
             </div>

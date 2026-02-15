@@ -16,7 +16,7 @@ interface Props {
 export default function QrDisplayPage({ initialSession }: Props) {
     return (
         <div className="min-h-screen bg-background-dark flex flex-col items-center justify-center relative overflow-hidden selection:bg-primary/30">
-            <Head title="Presence Validation Display" />
+            <Head title="Layar Presensi" />
 
             {/* Background Texture Architecture */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(19,200,236,0.08)_0%,_transparent_70%)] pointer-events-none" />
@@ -33,18 +33,18 @@ export default function QrDisplayPage({ initialSession }: Props) {
                 <div className="flex items-center gap-4 text-white/20">
                     <Shield className="size-4" />
                     <div className="h-4 w-px bg-current" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.5em]">Velora Security Node</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.5em]">Velora Station</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-muted-dynamics/40 uppercase tracking-widest">PRESENCE</span>
+                    <span className="text-[10px] font-bold text-muted-dynamics/40 uppercase tracking-widest">PRESENSI</span>
                     <span className="text-[10px] text-white/10">/</span>
-                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">VALIDATION_HUB</span>
+                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">Pusat Presensi</span>
                 </div>
             </div>
 
             <div className="absolute top-12 right-12 flex items-center gap-6">
                 <div className="flex flex-col items-end gap-1">
-                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Display Node</span>
+                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Display Station</span>
                     <span className="text-xs font-black text-white uppercase font-mono tracking-tighter">DN-VE-04-A</span>
                 </div>
                 <div className="size-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
@@ -62,8 +62,8 @@ export default function QrDisplayPage({ initialSession }: Props) {
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-6">
                         <div className="flex flex-col">
-                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Validation Mode</span>
-                            <span className="px-3 py-1 rounded bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">Required</span>
+                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Status</span>
+                            <span className="px-3 py-1 rounded bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">Wajib</span>
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Time Sync</span>
@@ -73,7 +73,7 @@ export default function QrDisplayPage({ initialSession }: Props) {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <span className="text-[9px] font-black text-white/10 uppercase tracking-[0.4em] rotate-180 vertical-text origin-center">Velora Intelligence Core</span>
+                    <span className="text-[9px] font-black text-white/10 uppercase tracking-[0.4em] rotate-180 vertical-text origin-center">Velora Core</span>
                     <div className="size-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
                         <LayoutGrid className="size-4 text-white/20" />
                     </div>
