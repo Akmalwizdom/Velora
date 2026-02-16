@@ -70,8 +70,8 @@ test('employee can check out using QR token', function () {
     expect(Attendance::count())->toBe(1);
     expect(Attendance::first()->isActive())->toBe(true);
 
-    // 2. Scan again (for departure)
-    $departureSession = $this->qrService->generateToken($this->admin);
+    // 2. Scan again (for departure) - Must use TYPE_CHECK_OUT session
+    $departureSession = $this->qrService->generateToken($this->admin, QrSession::TYPE_CHECK_OUT);
     $response = $this->actingAs($this->employee)
         ->postJson(route('qr.validate'), ['token' => $departureSession['token']]);
 
@@ -85,15 +85,47 @@ test('employee can check out using QR token', function () {
     expect($attendance->checked_out_at)->not->toBeNull();
 });
 
+test('employee cannot check out using check-in session type', function () {
+    $employee = User::factory()->create(['role_id' => \App\Models\Role::getEmployeeId(), 'status' => User::STATUS_ACTIVE]);
+    
+    // 1. Check in
+    $arrivalSession = $this->qrService->generateToken($this->admin, QrSession::TYPE_CHECK_IN);
+    $this->actingAs($employee)->postJson(route('qr.validate'), ['token' => $arrivalSession['token']])->assertStatus(200);
+
+    // 2. Try to check out using ANOTHER check-in session
+    $secondArrivalSession = $this->qrService->generateToken($this->admin, QrSession::TYPE_CHECK_IN);
+    $response = $this->actingAs($employee->fresh())
+        ->postJson(route('qr.validate'), ['token' => $secondArrivalSession['token']]);
+
+    $response->assertStatus(422)
+        ->assertJsonPath('success', false)
+        ->assertJson(fn ($json) => $json->where('message', fn ($m) => str_contains(strtolower($m), 'already checked in')));
+});
+
+test('employee cannot check in during check-out session type', function () {
+    $employee = User::factory()->create(['role_id' => \App\Models\Role::getEmployeeId(), 'status' => User::STATUS_ACTIVE]);
+    
+    // Session is for check-out
+    $departureSession = $this->qrService->generateToken($this->admin, QrSession::TYPE_CHECK_OUT);
+
+    $response = $this->actingAs($employee)
+        ->postJson(route('qr.validate'), ['token' => $departureSession['token']]);
+
+    $response->assertStatus(422)
+        ->assertJsonPath('success', false)
+        ->assertJsonPath('message', 'No active session found. Please check in first before scanning for check-out.');
+});
+
 test('QR token cannot be replayed', function () {
+    $employee = User::factory()->create(['role_id' => \App\Models\Role::getEmployeeId(), 'status' => User::STATUS_ACTIVE]);
     $sessionData = $this->qrService->generateToken($this->admin);
     
     // First use
-    $this->actingAs($this->employee)
+    $this->actingAs($employee)
         ->postJson(route('qr.validate'), ['token' => $sessionData['token']]);
         
     // Second use (replay attempt)
-    $response = $this->actingAs($this->employee)
+    $response = $this->actingAs($employee)
         ->postJson(route('qr.validate'), ['token' => $sessionData['token']]);
 
     $response->assertStatus(422)
