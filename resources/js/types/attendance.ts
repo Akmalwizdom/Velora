@@ -18,6 +18,7 @@ export interface QrSessionData {
     expires_at: string;
     session_id: number;
     ttl: number;
+    type: 'check_in' | 'check_out';
 }
 
 // Attendance Hub Props (Absensi page)
