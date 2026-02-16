@@ -37,7 +37,7 @@ test('authenticated users without proper role cannot visit the dashboard', funct
     ]);
 
     $response = $this->actingAs($user)->get(route('dashboard'));
-    $response->assertForbidden();
+    $response->assertRedirect(route('attendance-hub'));
 });
 
 test('pending users are blocked from accessing protected routes', function () {
@@ -48,6 +48,6 @@ test('pending users are blocked from accessing protected routes', function () {
     ]);
 
     $response = $this->actingAs($user)->get(route('dashboard'));
-    // Pending users should be logged out and redirected
-    $response->assertRedirect(route('login'));
+    // Pending users should be redirected to approval waiting page
+    $response->assertRedirect(route('pending-approval'));
 });

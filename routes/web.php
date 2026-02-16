@@ -40,8 +40,9 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     });
 
     // Manager and Admin: Team analytics & dashboard
+    Route::get('dashboard', [TeamAnalyticsController::class, 'index'])->name('dashboard');
+
     Route::middleware('role:manager,admin')->group(function () {
-        Route::get('dashboard', [TeamAnalyticsController::class, 'index'])->name('dashboard');
         Route::get('corrections', [CorrectionController::class, 'index'])->name('corrections.index');
     });
 

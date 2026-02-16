@@ -15,9 +15,15 @@ class TeamAnalyticsController extends Controller
     /**
      * Display the consolidated team dashboard.
      */
-    public function index(): Response
+    public function index(): Response|\Illuminate\Http\RedirectResponse
     {
         $user = auth()->user();
+
+        // Employees don't have access to the consolidatd team dashboard
+        if ($user->role?->name === \App\Models\Role::EMPLOYEE) {
+            return redirect()->route('attendance-hub');
+        }
+
         $employeeMetrics = $this->teamAnalyticsService->getEmployeeDetailedMetrics($user);
 
         return Inertia::render('dashboard', [
