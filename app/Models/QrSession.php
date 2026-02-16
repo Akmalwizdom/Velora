@@ -18,6 +18,7 @@ class QrSession extends Model
     protected $fillable = [
         'token_hash',
         'nonce',
+        'type', // 'check_in' | 'check_out'
         'generated_by',
         'expires_at',
         'consumed_by',
@@ -38,6 +39,10 @@ class QrSession extends Model
     public const STATUS_CONSUMED = 'consumed';
     public const STATUS_EXPIRED = 'expired';
     public const STATUS_REVOKED = 'revoked';
+
+    // Type constants
+    public const TYPE_CHECK_IN = 'check_in';
+    public const TYPE_CHECK_OUT = 'check_out';
 
     // Enforce immutability after consumption
     protected static function boot(): void
