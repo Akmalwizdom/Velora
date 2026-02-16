@@ -18,10 +18,12 @@ class QrAttendanceController extends Controller
      * Display the QR generation page for admins/managers.
      * Optimized for wall-mounted displays.
      */
-    public function display(): Response
+    public function display(Request $request): Response
     {
+        $type = $request->query('type', $this->inferCurrentType());
+        
         return Inertia::render('qr-display', [
-            'initialSession' => $this->qrService->generateToken(auth()->user()),
+            'initialSession' => $this->qrService->generateToken(auth()->user(), $type),
         ]);
     }
 
@@ -30,9 +32,20 @@ class QrAttendanceController extends Controller
      */
     public function generate(Request $request): JsonResponse
     {
-        $sessionData = $this->qrService->generateToken($request->user());
+        $type = $request->query('type', $this->inferCurrentType());
+        $sessionData = $this->qrService->generateToken($request->user(), $type);
 
         return response()->json($sessionData);
+    }
+
+    /**
+     * Infer the most likely session type based on current time.
+     */
+    protected function inferCurrentType(): string
+    {
+        $hour = now()->hour;
+        // Simple heuristic: before 1 PM is check-in, after is check-out
+        return $hour < 13 ? \App\Models\QrSession::TYPE_CHECK_IN : \App\Models\QrSession::TYPE_CHECK_OUT;
     }
 
     /**

@@ -33,11 +33,12 @@ class QrAttendanceService
      *
      * @return array{token: string, expires_at: string, session_id: int}
      */
-    public function generateToken(User $generator): array
+    public function generateToken(User $generator, string $type = QrSession::TYPE_CHECK_IN): array
     {
-        // Revoke any active sessions from this generator to prevent accumulation
+        // Revoke any active sessions of the same type from this generator
         QrSession::active()
             ->where('generated_by', $generator->id)
+            ->where('type', $type)
             ->update(['status' => QrSession::STATUS_REVOKED]);
 
         $nonce = bin2hex(random_bytes(16));
@@ -60,6 +61,7 @@ class QrAttendanceService
         $session = QrSession::create([
             'token_hash' => hash('sha256', $token),
             'nonce' => $nonce,
+            'type' => $type,
             'generated_by' => $generator->id,
             'expires_at' => $expiresAt,
             'status' => QrSession::STATUS_ACTIVE,
@@ -143,11 +145,16 @@ class QrAttendanceService
                 throw new \RuntimeException('This QR code is no longer valid. Please scan the latest code.');
             }
 
-            // 7. Toggle logic: Check In vs Check Out
-            $activeAttendance = $user->attendances()->active()->latest()->first();
+            // 7. Sessional Logic: Check In vs Check Out based on QR Type
+            $activeAttendance = Attendance::where('user_id', $user->id)->active()->latest()->first();
+            $sessionType = $session->type;
             $type = 'check_in';
 
-            if ($activeAttendance && $activeAttendance->isActive()) {
+            if ($sessionType === QrSession::TYPE_CHECK_OUT) {
+                if (!$activeAttendance || !$activeAttendance->isActive()) {
+                    throw new \RuntimeException('No active session found. Please check in first before scanning for check-out.');
+                }
+
                 // Already in -> Check them OUT
                 $attendance = $this->attendanceService->forceCheckOut(
                     $activeAttendance, 
@@ -157,6 +164,13 @@ class QrAttendanceService
                 );
                 $type = 'check_out';
             } else {
+                // TYPE_CHECK_IN logic
+                if ($activeAttendance && $activeAttendance->isActive()) {
+                    // Prevent double check-in during check-in session
+                    $time = $activeAttendance->checked_in_at->format('H:i');
+                    throw new \RuntimeException("You are already checked in at {$time}. Ready for work!");
+                }
+
                 // Not in -> Check them IN
                 $attendance = $this->attendanceService->checkIn(
                     user: $user,
