@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CheckOutRequest;
 use App\Models\OrganizationSetting;
 use App\Services\AttendanceService;
 use Illuminate\Http\RedirectResponse;
@@ -61,10 +62,6 @@ class AttendanceController extends Controller
      */
     public function checkIn(Request $request): RedirectResponse
     {
-        $request->validate([
-            // Location signals removed for QR-centric simplification
-        ]);
-
         // Device detection (lightweight, for audit support only)
         $deviceType = $this->detectDeviceType($request);
 
@@ -97,16 +94,12 @@ class AttendanceController extends Controller
     /**
      * Check out the current user.
      */
-    public function checkOut(Request $request): RedirectResponse
+    public function checkOut(CheckOutRequest $request): RedirectResponse
     {
-        $request->validate([
-            'note' => 'nullable|string|max:500',
-        ]);
-
         try {
             $this->attendanceService->checkOut(
                 $request->user(),
-                $request->input('note')
+                $request->validated('note')
             );
 
             return back()->with('success', 'Successfully checked out!');
