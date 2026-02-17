@@ -17,7 +17,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children, title, slimSidebar = false }: DashboardLayoutProps) {
     const { auth } = usePage<SharedData>().props;
     const user = auth.user;
-    const role = (user as any).role || 'Member';
+    const role = user.role_name || 'Member';
 
     return (
         <AppShell variant="sidebar">
@@ -84,7 +84,8 @@ export default function DashboardLayout({ children, title, slimSidebar = false }
                                 <img 
                                     src={user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`} 
                                     className="size-full rounded-full object-cover" 
-                                    alt={user.name} 
+                                    alt={user.name}
+                                    loading="lazy" 
                                 />
                             </button>
                         </div>

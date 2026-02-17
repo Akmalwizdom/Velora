@@ -70,6 +70,16 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
 
+    --color-status-success: var(--status-success);
+    --color-status-success-bg: var(--status-success-bg);
+    --color-status-success-border: var(--status-success-border);
+    --color-status-warning: var(--status-warning);
+    --color-status-warning-bg: var(--status-warning-bg);
+    --color-status-warning-border: var(--status-warning-border);
+    --color-status-danger: var(--status-danger);
+    --color-status-danger-bg: var(--status-danger-bg);
+    --color-status-danger-border: var(--status-danger-border);
+
     --color-grid-line: rgba(19, 200, 236, 0.05);
 
     @keyframes qr-scan {
@@ -124,6 +134,17 @@
     --sidebar-background: #0a0b0d;
     --muted-dynamics: #9db4b9;
     --scrollbar-thumb: #283639;
+
+    /* Semantic Status Colors */
+    --status-success: #4ade80;
+    --status-success-bg: rgba(74, 222, 128, 0.05);
+    --status-success-border: rgba(74, 222, 128, 0.1);
+    --status-warning: #fbbf24;
+    --status-warning-bg: rgba(251, 191, 36, 0.05);
+    --status-warning-border: rgba(251, 191, 36, 0.1);
+    --status-danger: #f87171;
+    --status-danger-bg: rgba(248, 113, 113, 0.05);
+    --status-danger-border: rgba(248, 113, 113, 0.1);
 
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
@@ -228,6 +249,11 @@
         height: 1px;
     }
 
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: var(--scrollbar-thumb) transparent;
+    }
+
     .custom-scrollbar::-webkit-scrollbar {
         width: 4px;
     }
@@ -239,5 +265,35 @@
     .custom-scrollbar::-webkit-scrollbar-thumb {
         background: var(--scrollbar-thumb);
         border-radius: 10px;
+    }
+
+    .skeleton {
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.04) 75%);
+        background-size: 200% 100%;
+        animation: skeleton-shimmer 1.5s ease-in-out infinite;
+        border-radius: 0.75rem;
+    }
+}
+
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

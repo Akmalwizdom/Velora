@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import DashboardLayout from '@/layouts/app-dashboard-layout';
 import { StatCard } from '@/components/ui/stat-card';
 import { PulseItem } from '@/components/ui/pulse-item';
+import { Dialog, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import type { TeamAnalyticsProps, TeamPerformanceProps, TeamMember, PulseFeedItem, EmployeeMetric } from '@/types/attendance';
 import {
     Activity,
@@ -44,11 +46,11 @@ export default function Dashboard({
             <div className="flex flex-col h-full min-h-0 overflow-hidden">
                 {/* Tab Bar */}
                 <div className="px-4 md:px-8 pt-6 pb-0 border-b border-white/5">
-                    <div className="flex gap-1">
-                        <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
+                    <div className="flex gap-1" role="tablist" aria-label="Dashboard tabs">
+                        <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} id="tab-overview" controls="panel-overview">
                             Overview
                         </TabButton>
-                        <TabButton active={activeTab === 'performance'} onClick={() => setActiveTab('performance')}>
+                        <TabButton active={activeTab === 'performance'} onClick={() => setActiveTab('performance')} id="tab-performance" controls="panel-performance">
                             Kinerja Tim
                         </TabButton>
                     </div>
@@ -57,6 +59,7 @@ export default function Dashboard({
                 {/* Tab Content */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     {activeTab === 'overview' ? (
+                        <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview">
                         <OverviewTab
                             stats={stats}
                             lateMembers={lateMembers}
@@ -64,11 +67,14 @@ export default function Dashboard({
                             pulseFeed={pulseFeed}
                             energyFlux={energyFlux}
                         />
+                        </div>
                     ) : (
+                        <div role="tabpanel" id="panel-performance" aria-labelledby="tab-performance">
                         <PerformanceTab
                             employeeMetrics={employeeMetrics}
                             teamSummary={teamSummary}
                         />
+                        </div>
                     )}
                 </div>
             </div>
@@ -78,9 +84,13 @@ export default function Dashboard({
 
 /* ──────────────────────── Tab Button ──────────────────────── */
 
-function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function TabButton({ active, onClick, children, id, controls }: { active: boolean; onClick: () => void; children: React.ReactNode; id: string; controls: string }) {
     return (
         <button
+            role="tab"
+            aria-selected={active}
+            aria-controls={controls}
+            id={id}
             onClick={onClick}
             className={cn(
                 'px-6 py-3 text-xs font-black uppercase tracking-widest transition-all rounded-t-xl border-b-2',
@@ -296,14 +306,14 @@ function PerformanceTab({
                                 className="h-10 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder:text-muted-dynamics/40 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none w-full md:w-72 transition-all font-bold"
                             />
                         </div>
-                        <button className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-white flex items-center gap-2 hover:bg-white/10 transition-all">
+                        <button aria-label="Filter karyawan" className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-white flex items-center gap-2 hover:bg-white/10 transition-all">
                             <Filter className="size-4 text-muted-dynamics" />
                         </button>
                     </div>
                 </div>
 
                 <div className="overflow-x-auto -mx-6 md:mx-0">
-                    <table className="w-full text-left border-separate border-spacing-y-2 px-6 md:px-0">
+                    <table className="w-full text-left border-separate border-spacing-y-2 px-6 md:px-0" aria-label="Rekap kehadiran karyawan">
                         <thead>
                             <tr className="text-[10px] font-black text-muted-dynamics/40 uppercase tracking-widest">
                                 <th className="px-4 py-2">Karyawan</th>
@@ -319,7 +329,7 @@ function PerformanceTab({
                                     <td className="px-4 py-4 first:rounded-l-2xl bg-white/[0.01] border-y border-white/[0.02] border-l first:border-l-white/[0.02]">
                                         <div className="flex items-center gap-3">
                                             <div className="size-10 rounded-full border-2 border-white/10 overflow-hidden shrink-0">
-                                                <img src={metric.avatar} className="size-full object-cover" alt={metric.name} />
+                                                <img src={metric.avatar} className="size-full object-cover" alt={metric.name} loading="lazy" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <span className="text-xs font-black text-white group-hover:text-primary transition-colors uppercase tracking-tight">{metric.name}</span>
@@ -401,17 +411,22 @@ function PerformanceTab({
             </div>
 
             {/* Employee Detail Modal */}
-            {selectedEmployee && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
-                    <div className="absolute inset-0 bg-background-dark/90 backdrop-blur-md" onClick={() => setSelectedEmployee(null)} />
-                    <div className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <Dialog open={!!selectedEmployee} onOpenChange={(open) => { if (!open) setSelectedEmployee(null); }}>
+                <DialogPortal>
+                    <DialogOverlay className="bg-background-dark/90 backdrop-blur-md" />
+                    <DialogPrimitive.Content
+                        className="fixed top-[50%] left-[50%] z-50 translate-x-[-50%] translate-y-[-50%] w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] outline-none"
+                        aria-describedby={undefined}
+                    >
+                        {selectedEmployee && (
+                            <>
                         <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
                             <div className="flex items-center gap-5">
                                 <div className="size-16 rounded-full border-2 border-primary/30 p-1.5 shadow-lg shadow-primary/10">
-                                    <img src={selectedEmployee.avatar} className="size-full rounded-full object-cover" alt={selectedEmployee.name} />
+                                    <img src={selectedEmployee.avatar} className="size-full rounded-full object-cover" alt={selectedEmployee.name} loading="lazy" />
                                 </div>
                                 <div>
-                                    <h4 className="text-2xl font-black text-white tracking-tight">{selectedEmployee.name}</h4>
+                                    <DialogPrimitive.Title className="text-2xl font-black text-white tracking-tight">{selectedEmployee.name}</DialogPrimitive.Title>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="text-[10px] font-black text-primary uppercase tracking-widest">Riwayat Kehadiran</span>
                                         <span className="size-1 rounded-full bg-white/20" />
@@ -419,12 +434,12 @@ function PerformanceTab({
                                     </div>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setSelectedEmployee(null)}
+                            <DialogPrimitive.Close
                                 className="size-12 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all text-muted-dynamics hover:text-white"
+                                aria-label="Tutup detail karyawan"
                             >
                                 <X className="size-6" />
-                            </button>
+                            </DialogPrimitive.Close>
                         </div>
 
                         <div className="px-8 pt-8 pb-4">
@@ -478,21 +493,23 @@ function PerformanceTab({
                                 <Download className="size-4" /> Ekspor Data
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
+                            </>
+                        )}
+                    </DialogPrimitive.Content>
+                </DialogPortal>
+            </Dialog>
         </div>
     );
 }
 
 /* ──────────────────────── Helper Components ──────────────────────── */
 
-function TeamMemberRow({ name, time, img, status }: any) {
+function TeamMemberRow({ name, time, img, status }: { name: string; time: string; img: string; status: string }) {
     return (
         <div className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 -mx-2 rounded-xl transition-all">
             <div className="flex items-center gap-3">
                 <div className="size-8 rounded-full border border-white/10 overflow-hidden">
-                    <img src={img} className="size-full object-cover" alt={name} />
+                    <img src={img} className="size-full object-cover" alt={name} loading="lazy" />
                 </div>
                 <div>
                     <p className="text-xs font-bold text-white mb-0.5">{name}</p>
